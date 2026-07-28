@@ -1,50 +1,38 @@
-# Data Analytics Portfolio (Akash Bhatnagar)
+# Data Analytics Portfolio — Akash Bhatnagar
 
-## Featured Projects
+Three end-to-end data projects covering unsupervised learning, NLP, and time-series forecasting.
 
-### 1) Customer Segmentation (Unsupervised Learning)
-* **Goal:** To segment customers into distinct groups based on purchasing habits (Annual Income vs. Spending Score) to optimize marketing strategies.
-* **Dataset:** Mall Customers Dataset (`Mall_Customers.csv`) – Contains 200 records of customer demographics and spending behavior.
-* **Method:**
-    * **Elbow Method:** Calculated Within-Cluster Sum of Square (WCSS) for k=1 to 10 to determine the optimal number of clusters.
-    * **K-Means Clustering:** Applied the K-Means algorithm with `n_clusters=5` to categorize customers.
-* **Key results:**
-    * Identified **5 distinct customer personas** (e.g., High Income/Low Spending, Low Income/High Spending).
-    * Visualized the clusters and their centroids using a 2D scatter plot with Seaborn/Matplotlib.
-* **How to run:**
-  1. Ensure `Mall_Customers.csv` is in the root directory.
-  2. Run `Customer_Segmentation_Project.ipynb`.
+| Project | Folder | Techniques |
+|---|---|---|
+| Customer Segmentation | [`customer-segmentation/`](customer-segmentation) | K-Means clustering, elbow method |
+| Sentiment Analysis | [`sentiment-analysis/`](sentiment-analysis) | VADER, RoBERTa (Hugging Face) |
+| Stock Forecasting | [`stock-forecasting/`](stock-forecasting) | LSTM networks (TensorFlow/Keras) |
 
-### 2) Sentiment Analysis
-* **Goal:** To analyze and classify customer sentiment from text reviews, comparing traditional "Bag of Words" methods against modern Deep Learning techniques.
-* **Dataset:** Amazon Fine Food Reviews (`Reviews.csv`) – A dataset of ~500,000 reviews.
-* **Method:**
-    * **VADER (Valence Aware Dictionary and sEntiment Reasoner):** Used for rule-based sentiment scoring.
-    * **RoBERTa (Hugging Face Transformers):** Implemented a pre-trained Transfer Learning model to capture context and nuance that VADER missed.
-* **Key results:**
-    * The RoBERTa model significantly outperformed VADER in detecting sarcasm and complex negative reviews.
-    * Visualized the distribution of sentiment scores across 1-star to 5-star ratings using Seaborn.
-* **How to run:**
-  1. Install dependencies (specifically `transformers` and `nltk`).
-  2. Run `Sentiment_Analysis_Project.ipynb`.
-  3. *Note:* The RoBERTa model requires significant compute power; a GPU is recommended.
+The datasets used by all three projects are bundled in [`data/Datasets.zip`](data/Datasets.zip) — unzip it and place the CSVs next to the notebook you're running (the notebooks were written in Google Colab, so their paths point at `/content/`; adjust the path if you run them locally).
 
-### 3) Stock Forecasting with LSTMs
-* **Goal:** To predict future stock prices of Microsoft (MSFT) using historical time-series data.
-* **Dataset:** MSFT historical stock data spanning 1986 to 2022.
-* **Method:**
-    * **Preprocessing:** Handled datetime indexing and performed MinMax scaling on "Close" prices.
-    * **Model:** Built and trained a Long Short-Term Memory (LSTM) Recurrent Neural Network using TensorFlow/Keras, optimized for sequence prediction.
-* **Key results:**
-    * The model successfully learned long-term dependencies in price trends over a 30-year period.
-    * Generated visualizations comparing predicted prices against actual historical data to validate accuracy.
-* **How to run:**
-  1. Run `Stock_Forecasting_with_LSTMs.ipynb`.
-  2. The notebook will automatically download/load the dataset and train the LSTM model.
+## 1) Customer Segmentation (Unsupervised Learning)
+
+* **Goal:** Segment mall customers into distinct groups based on Annual Income vs. Spending Score, to inform marketing strategy.
+* **Dataset:** Mall Customers (`Mall_Customers.csv`) — 200 records of customer demographics and spending behavior.
+* **Method:** Elbow method (WCSS for k = 1–10) to pick the cluster count, then K-Means with `n_clusters=5`.
+* **Key results:** Five clear customer personas (e.g. High Income / Low Spending, Low Income / High Spending), visualized with the cluster centroids on a 2D scatter plot.
+* **Run:** open `customer-segmentation/Customer_Segmentation_Project.ipynb` with `Mall_Customers.csv` alongside it.
+
+## 2) Sentiment Analysis (NLP)
+
+* **Goal:** Classify customer sentiment in product reviews, comparing a rule-based approach against a transformer model.
+* **Dataset:** Amazon Fine Food Reviews (`Reviews.csv`), first 500 reviews.
+* **Method:** VADER for rule-based polarity scoring, then `cardiffnlp/twitter-roberta-base-sentiment` (Hugging Face) for context-aware scoring; results compared per star rating.
+* **Key results:** RoBERTa clearly outperforms VADER on sarcastic and complex negative reviews. See the rendered charts in `sentiment-analysis/Sentiment_Analysis_Project_Output.pdf`.
+* **Run:** `sentiment-analysis/sentiment_analysis_project.py` (Colab export — needs `nltk` and `transformers`; a GPU helps for RoBERTa).
+
+## 3) Stock Forecasting with LSTMs (Time Series)
+
+* **Goal:** Predict Microsoft (MSFT) closing prices from historical data (1986–2022).
+* **Method:** Two LSTM models — a 3-day sliding window model with train/validation/test splits and a recursive-forecasting experiment, then a deeper 60-day-window model with dropout.
+* **Key results:** The models track held-out test data closely; the recursive experiment shows how prediction error compounds without fresh observations.
+* **Run:** open `stock-forecasting/Stock_Forecasting_with_LSTMs.ipynb` with `MSFT.csv` / `MicrosoftStock.csv` alongside it.
 
 ## Tech Stack
-* **Languages:** Python 3.x
-* **Data Manipulation:** pandas, numpy
-* **Visualization:** matplotlib, seaborn
-* **Machine Learning & Deep Learning:** TensorFlow (Keras), scikit-learn
-* **NLP:** NLTK, Transformers (Hugging Face)
+
+Python 3 · pandas · numpy · matplotlib · seaborn · scikit-learn · TensorFlow (Keras) · NLTK · Hugging Face Transformers
