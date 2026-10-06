@@ -102,7 +102,8 @@ check carries a small boundary-mapping error. AIHW also notes that some ACT priv
 
 - **PHIDU workbook.** Each sheet lists the 1,165 PHAs first, then an `AUSTRALIA+` row, then state, SA4 and SA3 totals.
   Thirty PHA codes are also SA3 codes (both are five digits), so the parser must split on the `AUSTRALIA+` row and not
-  on code length. Values use `#` (population under 100), `..` (not applicable), `n.p.` and `n.a.`, and all of these
+  on code length. Each state also has a pseudo-area coded `<state>9999` ("ABS cell adjustment" in
+  Census sheets, "Unknown <state>" in admissions sheets), which the parser sets aside. Values use `#` (population under 100), `..` (not applicable), `n.p.` and `n.a.`, and all of these
   become missing. The `/current/` URL is overwritten at each release, so the fetch fails loudly on a checksum mismatch;
   archived releases are kept as yearly zips.
 - **PHIDU PPH (PHA map only).** It covers public hospitals only, for 2020/21, re-released in December 2025 after an
