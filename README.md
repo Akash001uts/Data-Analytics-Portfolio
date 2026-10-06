@@ -11,7 +11,7 @@ tag if you want to see where I started.
 
 | Project | The question | Status |
 | --- | --- | --- |
-| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Models and residual map done, interactive map next |
+| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Models, residual map and interactive map done |
 | [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Planned |
 
 ## What I've learnt so far
@@ -130,8 +130,15 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    writes `reports/results.json`, the figures in `reports/figures/02_*.png`, and the results table in the project
    README. The per-area predictions go to `data/processed/health_sa3_results.gpkg`.
 
-8. **What isn't built yet.** `dap health report` will make the interactive map. For now it just tells you which
-   phase it's planned for.
+8. **Make the interactive map.**
+
+   ```
+   uv run dap health report
+   ```
+
+   This writes `reports/map/index.html`, a single page you can open in any browser. It shows each area compared
+   with its expected rate, the admission rate itself, and the hot and cold spots, with a zoom button for each
+   capital city.
 
 ### If something goes wrong
 

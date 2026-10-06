@@ -122,3 +122,16 @@ This turned out to be the most important decision so far.
   `dap health train` from `results.json`, and a test fails if the two drift apart. I still checked the hand-written
   notebook text against the outputs, and found two sentences that said more than the numbers did: one claimed both
   models agreed on features they didn't, and one said GP use didn't matter when after-hours GP visits did show up.
+
+## Making the interactive map (7 Oct 2026)
+
+- **Map files get big fast.** My first version of the page was 3.3 MB, almost all of it coastline: the Kimberley
+  SA3 alone has about 1,500 islands. Simplifying in degrees would have been the quick fix, but a hundredth of a
+  degree is about a kilometre, which would wreck inner-city areas only a few kilometres across. I simplified in
+  metres instead, with more detail for the capital cities than the regions, and dropped islands under 2 km². That
+  got it to 1.2 MB without changing how it looks.
+- **Count what you colour.** A test that the legend counts add up to the number of areas failed by one. Matplotlib's
+  `BoundaryNorm` puts the single highest value past the last class. It still got the right colour, so the map
+  looked fine, but that area was missing from the legend count.
+- **Share the settings between the static and interactive maps.** The page imports its colour classes from the
+  same module as the PNG figures, so the two can't quietly disagree.
