@@ -113,7 +113,9 @@ check carries a small boundary-mapping error. AIHW also notes that some ACT priv
 - **GP use.** Allocated by Medicare enrolment postcode rather than SA2, with 10 SA3s unpublished. "Services per 100
   people" is crude, not age-standardised, at SA3, so I control for age structure separately.
 - **Remoteness.** For each SA3: the population share in each Remoteness Area, built from the SA1 to RA allocation and
-  SA1 usual resident population.
+  SA1 usual resident population. SA1s that SEIFA doesn't score (usually because very few people live there) carry no
+  weight. By count, a median 97% of each SA3's SA1s are matched, and the lowest is East Pilbara at 75%, so the shares
+  there are a little less certain.
 - **Hospital distance.** MyHospitals lists 1,166 hospitals: 692 are open public hospitals, and one of those has no
   coordinates. Only 293 hospitals report ED presentations in 2023-24, because the national ED collection mainly covers
   larger EDs. Small rural hospitals that do treat emergencies are missing, so I call that feature "distance to nearest

@@ -219,7 +219,7 @@ def group_dot_chart(by_group: pd.DataFrame) -> plt.Figure:
     ax.set_xlabel("Potentially preventable hospitalisations per 100,000 (age-standardised)")
     ax.grid(axis="y", visible=False)
     ax.legend(loc="upper right", fontsize=8)
-    ax.set_title("Rates climb with remoteness, and the range widens")
+    ax.set_title("Rates climb with remoteness, and remote areas vary the most")
     return fig
 
 

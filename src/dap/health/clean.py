@@ -114,7 +114,10 @@ def target_columns(tidy: pd.DataFrame, year: str = TARGET_YEAR) -> pd.DataFrame:
     wide["erp"] = total["erp"]
     wide["aihw_sa3_group"] = total["aihw_sa3_group"]
     pre = tidy[(tidy.year == PRE_COVID_YEAR) & (tidy.category == "pph")].set_index("sa3_code")
-    wide[f"pph_asr_{PRE_COVID_YEAR.replace('-', '_')}"] = pre["asr"]
+    pre_asr = pre["asr"].copy()
+    # AIHW: some ACT private hospitals are missing before 2019-20, so the ACT (state 8) is left out.
+    pre_asr[pre_asr.index.str.startswith("8")] = np.nan
+    wide[f"pph_asr_{PRE_COVID_YEAR.replace('-', '_')}"] = pre_asr
     wide["has_target"] = wide["pph_asr"].notna()
     return wide
 

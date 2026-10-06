@@ -80,10 +80,14 @@ This turned out to be the most important decision so far.
   out two near-empty SA3s have no population, so their shares are missing, and a missing value isn't "between 0 and
   1". I made the test say what I actually meant (no missing values where there's a target, and every value that is
   there sits between 0 and 1) instead of patching the data to make the test pass.
-- **The obvious input isn't always the useful one.** I assumed GP visits per person would be one of the strongest
-  predictors, since PPH is meant to measure primary care. On its own it barely relates to the rate. That doesn't mean
-  GPs don't matter. Sicker areas probably use GPs more *and* end up in hospital more, and a raw correlation can't
-  separate those.
+- **The obvious input isn't always the useful one.** I assumed GP use would be one of the strongest predictors,
+  since PPH is meant to measure primary care. It barely relates to the rate. My first explanation was an age effect,
+  because the GP figures are crude rates and the admission rate is age-standardised, but when I checked, it stayed
+  near zero after allowing for age. So I've written "I don't know why yet" instead of a neat story I hadn't tested.
+- **Check your claims against your own output.** Before pushing, I went back through the notebook text and found
+  three sentences that didn't match the numbers above them: a "twice as high" that was really about 1.4 times, a
+  "the range widens" that didn't hold for every group, and a pre-COVID comparison that included the ACT even though
+  my own notes said I'd left it out. Writing the words before looking closely at the numbers is an easy trap.
 - **Look at the outliers by name.** One dot on the scatter plot was very disadvantaged but had a low rate. Looking it
   up gave Fairfield in Sydney, with a large migrant population. A summary statistic would have hidden it.
 - **Say what your quintiles are.** I split areas into population-weighted quintiles, so each holds about a fifth of
