@@ -68,7 +68,8 @@
         "gp_services_per_100",
         "km_to_public_hospital"
       ],
-      "pseudo_r2": 0.7881,
+      "r2_log_in_sample_features_only": 0.4063,
+      "r2_log_in_sample_with_neighbour_rates": 0.7403,
       "residual_moran_I": 0.04416,
       "rho": 0.6436,
       "standardised_coefficients": {

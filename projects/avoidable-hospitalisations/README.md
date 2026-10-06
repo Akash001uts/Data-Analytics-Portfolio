@@ -68,7 +68,7 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 | LightGBM | 0.55 | 0.68 | 0.13 | 338 | 0.58 |
 
 - Global Moran's I of the log rate: **0.71** (permutation p = 0.001). LISA finds 51 hot-spot and 52 cold-spot SA3s.
-- Spatial lag model: fitted on every area, pseudo R² 0.79 and residual Moran's I 0.04. With whole SA4s held out, R² on the log scale 0.36 and residual Moran's I 0.60.
+- Spatial lag model, R² on the log scale. Fitted on every area: 0.74 using the neighbours' observed rates (residual Moran's I 0.04), 0.41 from features alone. With whole SA4s held out: 0.36 and residual Moran's I 0.60.
 - Residual map model: LightGBM. 50% of people live in an SA3 within 10% of its expected rate. Moran's I of the log residual: 0.51.
 - Most above expected: Maryborough, Qld (+121%); Alice Springs, NT (+110%); Palmerston, NT (+76%); Hervey Bay, Qld (+72%); Kimberley, WA (+67%).
 - Most below expected: West Coast, Tas. (-36%); South East Coast, Tas. (-36%); Maryborough - Pyrenees, Vic. (-35%); Huon - Bruny Island, Tas. (-33%); Southern Highlands, NSW (-33%).
@@ -81,13 +81,15 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   flexible model. If I'd only reported random folds, I'd have overstated how well it works.
 - **A simple baseline goes a long way.** Knowing just the state and how remote an area is explains a fair share of
   the variation. All the features and boosted trees add to that, but not by as much as I expected.
-- **Which model is "best" depends on the scale.** Ridge regression does best on the log scale but falls apart on the
-  rate scale, because when a remote region is held out it extrapolates and predicts rates several times too high.
+- **Which model is "best" depends on the scale.** Ridge regression does best on the log scale but is unstable on
+  the rate scale, because when a remote region is held out it extrapolates and predicts rates several times too high.
   LightGBM has the opposite problem: trees can't predict above what they've seen, so it underestimates the most
   remote areas. I used LightGBM for the residual map and kept that caveat.
 - **The spatial lag model looked great until I tested it honestly.** Fitted on every area, it explains most of the
   variation and leaves almost no pattern behind. But that strength came from knowing the neighbours' rates. To
-  predict an area whose whole region is unknown, it can only use features, and it drops to one of the weaker models.
+  predict an area whose whole region is unknown, it can only use features, and on the log scale it drops to one of
+  the weaker models. Fitted on everything but using features alone, it scores about the same, so it's the
+  neighbours' rates, not overfitting, that made it look good.
 - **Maryborough in Queensland is the biggest surprise,** at roughly double what its profile predicts, with Hervey Bay
   next door also near the top. It's been high in every year of the AIHW data, so it isn't a one-off.
 - **Fairfield shows up, as I'd guessed it might,** among the areas furthest below expected, along with several

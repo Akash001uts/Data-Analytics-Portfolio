@@ -98,12 +98,13 @@ This turned out to be the most important decision so far.
 
 - **Test the way the model will be used.** Neighbouring areas have very similar rates (Moran's I is high), so with a
   random split most test areas have a neighbour in the training data. Holding out whole SA4 regions instead knocked
-  a noticeable amount off every model's score, and the most off the most flexible one. Reporting only the random
+  a noticeable amount off the score of every model that learns from the data, and the most off the most flexible
+  one. Reporting only the random
   split would have overstated my results.
 - **A model that looks best in-sample can be the one that cheats most.** The spatial lag model explained most of the
   variation when fitted on every area, and left almost no pattern in its residuals. But its strength was using the
   neighbours' actual rates. To predict an area whose whole region is held out, I had to use the version that only
-  needs features, and then it was one of the weaker models. Giving it the neighbours' real rates in cross-validation
+  needs features, and then it was one of the weaker models on the log scale. Giving it the neighbours' real rates in cross-validation
   would have leaked the answer without any error message.
 - **Prove your leakage tests can fail.** I wrote a test that changes the test areas' rates and checks the
   predictions don't move. A passing test only means something if it would catch a leak, so I wrote deliberately
