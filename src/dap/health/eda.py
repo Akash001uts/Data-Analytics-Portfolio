@@ -4,7 +4,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colors import BoundaryNorm, ListedColormap
+from matplotlib.colors import BoundaryNorm, ListedColormap, to_hex
 from matplotlib.patches import Patch
 
 from dap.common.plotting import (
@@ -43,6 +43,12 @@ def label(name: str) -> str:
         (" ed ", " ED "),
         ("dsp", "DSP"),
         ("ft ", "full-time "),
+        ("born nes", "born in non-English-speaking country"),
+        ("lf ", "labour force "),
+        ("age 0 14", "age 0-14"),
+        ("age 65 plus", "age 65+"),
+        ("age 85 plus", "age 85+"),
+        ("km to", "km to nearest"),
     ]:
         words = words.replace(old, new)
     words = words.removeprefix("ra ")
@@ -139,11 +145,36 @@ def _classes(values: pd.Series, k: int = 7) -> np.ndarray:
 
 def choropleth(table: gpd.GeoDataFrame, column: str = "pph_asr", title: str = "") -> plt.Figure:
     """Australia-wide map with insets for four capitals, in quantile classes of one blue ramp."""
-    geo = table.to_crs("EPSG:3577")
-    geo = geo.assign(geometry=geo.geometry.simplify(500))
-    bins = _classes(geo[column])
+    bins = _classes(table[column])
     cmap = ListedColormap(BLUE_RAMP[: len(bins) - 1])
     norm = BoundaryNorm(bins, cmap.N)
+    colours = table[column].map(lambda v: MISSING if pd.isna(v) else to_hex(cmap(norm(v))))
+    handles = [
+        Patch(facecolor=cmap(i), label=f"{bins[i]:,.0f} to {bins[i + 1]:,.0f}")
+        for i in range(cmap.N)
+    ] + [Patch(facecolor=MISSING, label="Not published")]
+    return map_with_insets(
+        table,
+        colours,
+        handles,
+        title,
+        "Admissions per 100,000 (age-standardised), quantile classes",
+    )
+
+
+def map_with_insets(
+    table: gpd.GeoDataFrame,
+    colours: pd.Series,
+    handles: list,
+    title: str,
+    legend_title: str,
+    ncol: int = 4,
+) -> plt.Figure:
+    """Draw each area in its given colour: Australia on the left, four capitals as insets."""
+    geo = table.to_crs("EPSG:3577")
+    geo = geo.assign(
+        geometry=geo.geometry.simplify(500), _colour=colours.reindex(geo.index).fillna(MISSING)
+    )
 
     fig = plt.figure(figsize=(11, 9))
     main = fig.add_axes([0.0, 0.16, 0.62, 0.78])
@@ -152,12 +183,7 @@ def choropleth(table: gpd.GeoDataFrame, column: str = "pph_asr", title: str = ""
     ]
 
     def draw(ax, data):
-        if data[column].isna().any():
-            gaps = data[data[column].isna()]
-            gaps.plot(ax=ax, color=MISSING, edgecolor="white", linewidth=0.2)
-        data[data[column].notna()].plot(
-            ax=ax, column=column, cmap=cmap, norm=norm, edgecolor="white", linewidth=0.2
-        )
+        data.plot(ax=ax, color=data["_colour"], edgecolor="white", linewidth=0.2)
         ax.set_axis_off()
 
     draw(main, geo)
@@ -166,16 +192,12 @@ def choropleth(table: gpd.GeoDataFrame, column: str = "pph_asr", title: str = ""
         draw(ax, geo[geo.gcc_code == code])
         ax.set_title(name, fontsize=9, loc="left", color=TEXT_SECONDARY, fontweight="normal")
 
-    handles = [
-        Patch(facecolor=cmap(i), label=f"{bins[i]:,.0f} to {bins[i + 1]:,.0f}")
-        for i in range(cmap.N)
-    ] + [Patch(facecolor=MISSING, label="Not published")]
     fig.legend(
         handles=handles,
         loc="lower left",
         bbox_to_anchor=(0.02, 0.02),
-        ncol=4,
-        title="Admissions per 100,000 (age-standardised), quantile classes",
+        ncol=ncol,
+        title=legend_title,
         title_fontsize=9,
         fontsize=9,
         alignment="left",

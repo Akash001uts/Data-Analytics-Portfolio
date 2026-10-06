@@ -11,7 +11,7 @@ tag if you want to see where I started.
 
 | Project | The question | Status |
 | --- | --- | --- |
-| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Data cleaned and explored, modelling next |
+| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Models and residual map done, interactive map next |
 | [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Planned |
 
 ## What I've learnt so far
@@ -27,6 +27,10 @@ I keep a running log in [LEARNINGS.md](LEARNINGS.md). The short version:
   the answer. Here, the list of allowed inputs is in code, and tests fail if anything hospital-related sneaks in.
 - **Look at the rows, not just the headers.** The spreadsheets had fake "areas" mixed in with the real ones, which I
   only found when I made a test count the rows.
+- **Neighbours give the answer away.** Areas next to each other have very similar rates, so a random train/test
+  split made every model look better than it is. Holding out whole regions at a time gave more honest scores, and
+  showed that the model that looked best when fitted on everything (a spatial lag model) mostly relied on knowing
+  its neighbours' rates.
 
 ## How the repo is laid out
 
@@ -36,7 +40,7 @@ projects/
   sentiment-analysis/           the plan for the rebuilt sentiment project
 src/dap/                        the shared Python code, so tests and notebooks can import it
   common/                       file paths, seeds, and the data manifest checker
-  health/                       downloading the data, the feature allowlist, reading the PHIDU workbook
+  health/                       downloading, cleaning, the feature allowlist, spatial stats, models and CV
 tests/                          pytest tests, plus tiny made-up data in tests/fixtures
 data/manifest.yaml              where every data file comes from, with its size and SHA256 (the data itself isn't in git)
 LEARNINGS.md                    what I've learnt and got wrong along the way
@@ -116,8 +120,18 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    uv run jupyter lab projects/avoidable-hospitalisations/notebooks
    ```
 
-7. **What isn't built yet.** `dap health train` and `report` will fit the models and make the maps. For now they just
-   tell you which phase they're planned for. I'll update this section as they're built.
+7. **Fit the models.**
+
+   ```
+   uv run dap health train
+   ```
+
+   This runs the spatial statistics and every model under both kinds of cross-validation (about 40 seconds), then
+   writes `reports/results.json`, the figures in `reports/figures/02_*.png`, and the results table in the project
+   README. The per-area predictions go to `data/processed/health_sa3_results.gpkg`.
+
+8. **What isn't built yet.** `dap health report` will make the interactive map. For now it just tells you which
+   phase it's planned for.
 
 ### If something goes wrong
 
