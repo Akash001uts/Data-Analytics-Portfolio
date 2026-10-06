@@ -22,7 +22,7 @@ DENY_SHEET_RE = re.compile(r"^(Hosp_|Admiss|ED_)")
 DENY_MEASURE_RE = re.compile(
     r"^(Number|No\.|SR\b|SDR\b|Sig\.|RRMSE|Population|Total pop|Usual resident|Estimated resident"
     r"|ERP|Minimum|Maximum|Aust rank)"
-    r"|lower 95|upper 95| - lo| - up"
+    r"|lower 95|upper 95|higher 95| - lo| - up| - hi"
 )
 
 GROUPS = ("socioeconomic", "demographic", "access", "gp_use", "prevention", "health_status")
@@ -384,8 +384,124 @@ TIER_A: tuple[Feature, ...] = (
     ),
 )
 
-# Tier B is defined in Phase 2 once its column labels are resolved; it is a sensitivity check only.
-TIER_B: tuple[Feature, ...] = ()
+
+def _b(name, sheet, block, measure, year):
+    return Feature(name, "health_status", "B", PHIDU_SOURCE, sheet, block, measure, year)
+
+
+_CENSUS = "Census_condition_type_total"
+_RISK = "Estimates_risk_factors_adults"
+_ME = "(modelled estimates)"
+
+# Tier B: health status. These sit on the causal path to admission (and the modelled estimates
+# are themselves predicted from socio-demographic data), so they are a sensitivity check only.
+TIER_B: tuple[Feature, ...] = (
+    _b("arthritis_asr", _CENSUS, "People who reported they had arthritis", "ASR per 100", "2021"),
+    _b("asthma_asr", _CENSUS, "People who reported they had asthma", "ASR per 100", "2021"),
+    _b(
+        "diabetes_asr",
+        _CENSUS,
+        "People who reported they had diabetes (excluding gestational diabetes)",
+        "ASR per 100",
+        "2021",
+    ),
+    _b(
+        "heart_disease_asr",
+        _CENSUS,
+        "People who reported they had heart disease (including heart attack or angina)",
+        "ASR per 100",
+        "2021",
+    ),
+    _b(
+        "kidney_disease_asr",
+        _CENSUS,
+        "People who reported they had kidney disease",
+        "ASR per 100",
+        "2021",
+    ),
+    _b(
+        "lung_condition_asr",
+        _CENSUS,
+        "People who reported they had a lung condition (including COPD or emphysema)",
+        "ASR per 100",
+        "2021",
+    ),
+    _b(
+        "mental_health_condition_asr",
+        _CENSUS,
+        "People who reported they had a mental health condition (including depression or anxiety)",
+        "ASR per 100",
+        "2021",
+    ),
+    _b("stroke_asr", _CENSUS, "People who reported they had a stroke", "ASR per 100", "2021"),
+    _b(
+        "three_plus_conditions_asr",
+        "Census_health_condition_total",
+        "People who reported they had three or more long-term health conditions",
+        "ASR per 100",
+        "2021",
+    ),
+    _b(
+        "fair_poor_health_asr",
+        "Estimates_self_assessed_health",
+        f"Estimated number of people aged 15 years and over with fair or poor self-assessed health {_ME}",  # noqa: E501
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "psych_distress_asr",
+        _RISK,
+        "Estimated number of persons aged 18 years and over with high or very high psychological "
+        f"distress, based on the Kessler 10 Scale (K10) {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "high_blood_pressure_asr",
+        _RISK,
+        f"Estimated number of people aged 18 years and over who had high blood pressure {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "obese_asr",
+        _RISK,
+        f"Estimated number of persons aged 18 years and over who were obese {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "current_smokers_asr",
+        _RISK,
+        f"Estimated number of persons aged 18 years and over who were current smokers {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "risky_drinking_asr",
+        _RISK,
+        "Estimated number of persons aged 15 years and over who consumed 5 or more standard "
+        f"alcoholic drinks on any day in the last 12 months at least monthly {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "physically_inactive_asr",
+        _RISK,
+        "Estimated number of people aged 15 years and over who did not meet the physical activity "
+        f"guidelines {_ME}",
+        "ASR per 100",
+        "2022",
+    ),
+    _b(
+        "profound_disability_pct",
+        "Census_disability",
+        "People with a profound or severe disability (includes people in long-term accommodation), "
+        "All ages",
+        "% people with a profound or severe disability",
+        "2021",
+    ),
+)
 
 ALLOWLIST: tuple[Feature, ...] = TIER_A + TIER_B
 

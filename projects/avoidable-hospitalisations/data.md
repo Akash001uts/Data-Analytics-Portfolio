@@ -173,10 +173,15 @@ include it because it measures primary care reach, not hospital use.
 
 ### Tier B: health status (sensitivity only, off by default)
 
-Census long-term conditions (arthritis, asthma, diabetes, heart disease, kidney disease, lung conditions, mental health,
-stroke, three or more conditions; ASR per 100); modelled fair or poor self-assessed health; modelled adult risk factors
-(smoking, obesity, physical inactivity, high blood pressure, alcohol); profound or severe disability; smoking during
-pregnancy.
+17 features, all age-standardised rates or percentages: Census long-term conditions (arthritis, asthma, diabetes,
+heart disease, kidney disease, lung conditions, mental health conditions, stroke, three or more conditions); modelled
+fair or poor self-assessed health; modelled adult risk factors (psychological distress, high blood pressure, obesity,
+smoking, risky drinking, physical inactivity); and profound or severe disability.
+
+In the Census condition sheets the condition name sits in the second header row, under a sheet-wide caveat, so the
+reader matches a feature's title against either header row and insists on exactly one column. PHIDU's modelled
+estimates aren't published for 20 SA3s (13 of them have a target, mostly remote), so the Tier B check runs on fewer
+areas, and leaves out some of the highest-rate ones.
 
 These sit on the causal path. A high chronic disease prevalence explains chronic PPH without saying anything about
 primary care, and PHIDU's modelled estimates are themselves predicted from socio-demographic data, so they would

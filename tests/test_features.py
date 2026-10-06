@@ -61,12 +61,12 @@ def test_counts_and_significance_columns_are_rejected(measure):
 
 def test_health_status_must_be_tier_b():
     bad = F.Feature(
-        "asthma_asr",
+        "cancer_asr",
         "health_status",
         "A",
         F.PHIDU_SOURCE,
         "Census_condition_type_total",
-        "Asthma",
+        "People who reported they had cancer (including remission)",
         "ASR per 100",
     )
     with pytest.raises(F.LeakageError, match="Tier B"):
@@ -95,3 +95,8 @@ def test_fixture_features_are_all_allowlisted(fixtures_dir):
 
     cols = pd.read_csv(fixtures_dir / "features.csv").columns.drop("sa3_code").tolist()
     F.check_columns(cols)
+
+
+def test_tier_b_is_only_health_status():
+    assert F.TIER_B and all(f.group == "health_status" and f.tier == "B" for f in F.TIER_B)
+    assert not set(F.feature_names(("A",))) & {f.name for f in F.TIER_B}
