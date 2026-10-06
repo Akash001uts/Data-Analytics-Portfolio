@@ -1,38 +1,32 @@
-# Data Analytics Portfolio — Akash Bhatnagar
+# Data Analytics Portfolio
 
-Three end-to-end data projects covering unsupervised learning, NLP, and time-series forecasting.
+I'm rebuilding this repository. It will hold two projects:
 
-| Project | Folder | Techniques |
-|---|---|---|
-| Customer Segmentation | [`customer-segmentation/`](customer-segmentation) | K-Means clustering, elbow method |
-| Sentiment Analysis | [`sentiment-analysis/`](sentiment-analysis) | VADER, RoBERTa (Hugging Face) |
-| Stock Forecasting | [`stock-forecasting/`](stock-forecasting) | LSTM networks (TensorFlow/Keras) |
+- **Avoidable hospital admissions across Australia** (in progress): which areas have more potentially
+  preventable hospitalisations than their social, demographic and access profile predicts. It uses open
+  AIHW, PHIDU and ABS data, with spatial cross-validation and a map of residuals.
+- **Sentiment analysis, re-evaluated** (planned): rule-based, linear and transformer models on Amazon
+  Fine Food Reviews, measured properly with macro-F1, baselines and error analysis.
 
-The datasets used by all three projects are bundled in [`data/Datasets.zip`](data/Datasets.zip) — unzip it and place the CSVs next to the notebook you're running (the notebooks were written in Google Colab, so their paths point at `/content/`; adjust the path if you run them locally).
+Data sources, editions, licences and the feature allowlist are documented in [docs/data.md](docs/data.md).
 
-## 1) Customer Segmentation (Unsupervised Learning)
+## Earlier coursework (v1)
 
-* **Goal:** Segment mall customers into distinct groups based on Annual Income vs. Spending Score, to inform marketing strategy.
-* **Dataset:** Mall Customers (`Mall_Customers.csv`) — 200 records of customer demographics and spending behavior.
-* **Method:** Elbow method (WCSS for k = 1–10) to pick the cluster count, then K-Means with `n_clusters=5`.
-* **Key results:** Five clear customer personas (e.g. High Income / Low Spending, Low Income / High Spending), visualized with the cluster centroids on a 2D scatter plot.
-* **Run:** open `customer-segmentation/Customer_Segmentation_Project.ipynb` with `Mall_Customers.csv` alongside it.
+My earlier coursework (customer segmentation, the first sentiment analysis and an LSTM stock forecast)
+is preserved at the [`v1-coursework`](https://github.com/Akash001uts/Data-Analytics-Portfolio/tree/v1-coursework)
+tag.
 
-## 2) Sentiment Analysis (NLP)
+## Reproduce
 
-* **Goal:** Classify customer sentiment in product reviews, comparing a rule-based approach against a transformer model.
-* **Dataset:** Amazon Fine Food Reviews (`Reviews.csv`), first 500 reviews.
-* **Method:** VADER for rule-based polarity scoring, then `cardiffnlp/twitter-roberta-base-sentiment` (Hugging Face) for context-aware scoring; results compared per star rating.
-* **Key results:** RoBERTa clearly outperforms VADER on sarcastic and complex negative reviews. See the rendered charts in `sentiment-analysis/Sentiment_Analysis_Project_Output.pdf`.
-* **Run:** `sentiment-analysis/sentiment_analysis_project.py` (Colab export — needs `nltk` and `transformers`; a GPU helps for RoBERTa).
+Requires [uv](https://docs.astral.sh/uv/).
 
-## 3) Stock Forecasting with LSTMs (Time Series)
+```
+uv sync
+uv run pytest
+uv run dap health fetch   # downloads the raw data and checks it against data/manifest.yaml
+```
 
-* **Goal:** Predict Microsoft (MSFT) closing prices from historical data (1986–2022).
-* **Method:** Two LSTM models — a 3-day sliding window model with train/validation/test splits and a recursive-forecasting experiment, then a deeper 60-day-window model with dropout.
-* **Key results:** The models track held-out test data closely; the recursive experiment shows how prediction error compounds without fresh observations.
-* **Run:** open `stock-forecasting/Stock_Forecasting_with_LSTMs.ipynb` with `MSFT.csv` / `MicrosoftStock.csv` alongside it.
+## Licence
 
-## Tech Stack
-
-Python 3 · pandas · numpy · matplotlib · seaborn · scikit-learn · TensorFlow (Keras) · NLTK · Hugging Face Transformers
+Code is MIT licensed. Outputs derived from PHIDU data are CC BY-NC-SA 3.0 AU; see
+[docs/data.md](docs/data.md#licences-and-attribution).

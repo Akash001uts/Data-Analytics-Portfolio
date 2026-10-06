@@ -1,0 +1,46 @@
+[project]
+name = "dap"
+version = "0.1.0"
+description = "Data analytics portfolio: avoidable hospital admissions across Australia, and a rebuilt sentiment evaluation"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Akash Bhatnagar" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "geopandas>=1.0",
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.2",
+    "pyogrio>=0.10",
+    "pyyaml>=6.0",
+    "shapely>=2.0",
+]
+
+[project.scripts]
+dap = "dap.cli:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0",
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dap"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "PTH"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

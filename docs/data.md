@@ -4,7 +4,8 @@ This page records what data the health project uses, why, and what I checked bef
 Every file is listed with its URL, size and SHA256 in [`data/manifest.yaml`](../data/manifest.yaml).
 No raw data is committed; `dap health fetch` downloads and verifies it.
 
-All checks below were run on 6 October 2026 against the files in the manifest.
+The checks below were first run on 6 October 2026. PHIDU published a September 2026 release the same
+week, so I re-pinned it on 7 October and re-ran every PHIDU-based number: none of them changed.
 
 ## Question
 
@@ -75,7 +76,7 @@ evaluation and say so in the limitations, because the model never sees the most 
 | ID | What | Edition and years | Use | Licence |
 |---|---|---|---|---|
 | `aihw_pph_sa3` | AIHW HPF 76, Table 4: PPH by SA3 | SA3 2021, 2017-18 to 2023-24, public and private | Target | CC BY 4.0 |
-| `phidu_sha_pha` | PHIDU Social Health Atlas, PHA workbook (June 2026 release), SA3 total rows | PHA and SA3 2021; indicator years vary (mostly 2021 Census) | Features; PHA map | CC BY-NC-SA 3.0 AU |
+| `phidu_sha_pha` | PHIDU Social Health Atlas, PHA workbook (September 2026 release), SA3 total rows | PHA and SA3 2021; indicator years vary (mostly 2021 Census) | Features; PHA map | CC BY-NC-SA 3.0 AU |
 | `phidu_sa2_pha_concordance` | SA2 to PHA concordance | 2021 | Nesting checks | CC BY-NC-SA 3.0 AU |
 | `aihw_mbs_sa3` | AIHW PHC 19, Table 3: Medicare-subsidised services by SA3 | SA3 2021, 2017-18 to 2024-25 | GP-use features | CC BY 4.0 |
 | `abs_sa2_boundaries` | ABS SA2 boundaries, GDA2020 | ASGS Edition 3 (2021) | Geometry, SA3 dissolve, centroids | CC BY 4.0 |
@@ -120,9 +121,12 @@ check carries a small boundary-mapping error. AIHW also notes that some ACT priv
 ## Feature allowlist
 
 Features are an explicit allowlist of (sheet, indicator) pairs from the PHIDU SA3 rows, plus the derived access
-features. Anything not on the list cannot reach a model, and Phase 1 tests will enforce the rules below.
+features. Anything not on the list cannot reach a model. `src/dap/health/features.py` holds the list, and
+`tests/test_features.py` and `tests/test_allowlist_workbook.py` enforce the rules below. The second test
+also checks that every PHIDU feature resolves to exactly one column of the real workbook, so a renamed
+sheet or relabelled column in a future release fails loudly.
 
-### Rules the tests will enforce
+### Rules the tests enforce
 
 1. **Hard denylist by sheet.** No feature may come from a sheet matching `^(Hosp_|Admiss|ED_)`. That covers admissions by
    hospital type and by diagnosis (which include PPH directly), injury admissions, procedures, same-day renal dialysis,
@@ -146,17 +150,17 @@ features. Anything not on the list cannot reach a model, and Phase 1 tests will 
 | | `Housing_Transport` | % people in crowded dwellings; % people in social housing; % households receiving rent assistance; % low-income households under financial stress | 2021, June 2025 |
 | | `Homelessness` | Homelessness (ASR per 10,000) | 2021 |
 | Demographic | `Age_distribution_Persons_broad` | % aged 0 to 14; % 65 and over; % 85 and over | 2024 |
-| | `Population_proportion` | % Aboriginal population | 2021 |
+| | `Indigenous_proportion` | % Aboriginal population | 2021 |
 | | `Birthplace_NES_residents` | % born in non-English-speaking countries; % poor English proficiency | 2021 |
 | Access | `Housing_Transport` | % dwellings with no motor vehicle | 2021 |
-| | `Private_health_insurance` | % adults with private health insurance (flagged, see below) | 2022-23 |
+| | `Private_health_insurance` | % adults with private health insurance (flagged, see below) | 2023-24 |
 | | `Aged_care_places` | Residential aged care places per 1,000 aged 70 and over | June 2025 |
 | | derived (ABS RA) | Population share in Inner regional, Outer regional, and Remote or Very remote areas | 2021 |
 | | derived (MyHospitals) | Population-weighted km to nearest open public hospital; to nearest ED-reporting hospital | 2023-24 |
 | GP use | derived (AIHW PHC 19) | GP attendances: % of people with a claim; services per 100 people; after-hours GP services per 100 people | 2023-24 |
 | Prevention | `Child_youth_health` | % children fully immunised at 1, 2 and 5 years | 2023 |
 | | `Screening` | Bowel screening participation (persons); breast screening participation | 2022 and 2023 |
-| | `Mothers_babies` | % women with no antenatal visit in the first 10 weeks | 2019 to 2021 |
+| | `Mothers_babies` | % women with no antenatal visit in the first 10 weeks | 2021 to 2023 |
 
 Private health insurance stays in because it plausibly changes where and whether people are admitted, and with an
 all-hospitals target that is a real effect rather than a reporting artefact. I will still report results with and
@@ -200,7 +204,7 @@ comes from the same year as the target.
   **CC BY-NC-SA 3.0 AU**, as PHIDU's ShareAlike terms require, and are for non-commercial use.
 - PHIDU attribution for modified material: "Based on Public Health Information Development Unit (PHIDU), Torrens
   University Australia material from: Social Health Atlas of Australia: Population Health Areas (online) 2026. Accessed
-  6 October 2026, https://phidu.torrens.edu.au/social-health-atlases/data".
+  7 October 2026, https://phidu.torrens.edu.au/social-health-atlases/data".
 - AIHW data tables are CC BY 4.0 (aihw.gov.au/copyright). The MyHospitals API states CC BY 3.0 in its own metadata.
 - ABS boundaries, allocation files and SEIFA are CC BY 4.0.
 

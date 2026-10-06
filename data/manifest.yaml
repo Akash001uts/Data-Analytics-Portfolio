@@ -1,7 +1,8 @@
 # Data manifest for the health flagship.
 # Raw files are never committed. `dap health fetch` downloads each entry to data/raw/<id>/<file>,
 # checks bytes and sha256, and fails with an "upstream changed" error on a mismatch.
-# Recorded 2026-10-06 during Phase 0. See docs/data.md for how each source is used.
+# Recorded 2026-10-06 during Phase 0; PHIDU entries re-pinned 2026-10-07 to the September 2026 release.
+# See docs/data.md for how each source is used.
 
 version: 1
 retrieved: 2026-10-06
@@ -12,21 +13,23 @@ sources:
   - id: phidu_sha_pha
     title: Social Health Atlas of Australia, data by Population Health Area (2021 ASGS)
     publisher: Public Health Information Development Unit (PHIDU), Torrens University Australia
-    release: June 2026
+    release: September 2026
     url: https://phidu.torrens.edu.au/current/data/sha-aust/pha/phidu_data_pha_aust.xlsx
     # /current/ is overwritten at each release (the PPH errata re-release in Dec 2025 changed it in place).
     # Older releases are archived as yearly zips, e.g. /data-archive/sha-aust/2015-onwards/phidu_data_2025_pha_aust.zip.
     # The 2026 zip was not archived as of 2026-10-06 (that URL returned HTTP 500). Once it appears, add it here
     # as fallback_url and confirm its contents match the sha256 below.
     file: phidu_data_pha_aust.xlsx
-    bytes: 69229030
-    sha256: 21b65a267854a4562ff9d1c46b13212f79bc505673c92e123e4bb1544f556aef
-    last_modified: 2026-06-23T04:45:37Z
+    # Phase 0 recon on 2026-10-06 was served a stale June 2026 copy (69,229,030 bytes); the server has
+    # served this September 2026 release consistently since 2026-10-07.
+    bytes: 69976812
+    sha256: 0af57cb8260fa1fb724665c4b41c91efe6346a363419d4ae70f3ad88c1c89206
+    last_modified: 2026-09-22T23:55:19Z
     geography: PHA 2021 (1,165 areas) plus SA3 and SA4 totals below the "AUSTRALIA+" row
     licence: CC BY-NC-SA 3.0 AU
     attribution: >-
       Based on Public Health Information Development Unit (PHIDU), Torrens University Australia material from:
-      Social Health Atlas of Australia: Population Health Areas (online) 2026. Accessed 6 October 2026,
+      Social Health Atlas of Australia: Population Health Areas (online) 2026. Accessed 7 October 2026,
       https://phidu.torrens.edu.au/social-health-atlases/data
     used_for: [features, pha_descriptive_map]
 
@@ -47,9 +50,9 @@ sources:
     publisher: PHIDU, Torrens University Australia
     url: https://phidu.torrens.edu.au/current/data/sha-aust/notes/phidu_data_sources_notes.pdf
     file: phidu_data_sources_notes.pdf
-    bytes: 1659191
-    sha256: 7211ab25209a5b52539265866664dc40f850aa7d1fa2319f6a8480da30d27387
-    last_modified: 2026-06-19T01:31:03Z
+    bytes: 1676679
+    sha256: d2258562b3c33a43012a603cec64b8b6004f12dc67fbf9a96cc3305a38a72e7f
+    last_modified: 2026-09-24T02:25:17Z
     licence: CC BY-NC-SA 3.0 AU
     used_for: [documentation]
 
@@ -148,6 +151,7 @@ sources:
     publisher: AIHW
     url: https://myhospitalsapi.aihw.gov.au/api/v1/reporting-units
     file: reporting_units.json
+    accept: application/json   # without this the API returns CSV
     volatile: true
     expect:
       reporting_units: 1428
@@ -163,6 +167,7 @@ sources:
     publisher: AIHW
     url: https://myhospitalsapi.aihw.gov.au/api/v1/measures/MYH0035/data-items
     file: ed_presentations_MYH0035.json
+    accept: application/json   # without this the API returns CSV
     volatile: true
     pin:
       data_set_ids_2023_24: [10511, 10512, 10513, 10514, 10515]
