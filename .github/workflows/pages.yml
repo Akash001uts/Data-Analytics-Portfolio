@@ -1,0 +1,35 @@
+name: Map on GitHub Pages
+
+# Publishes the committed interactive map (reports/map/, built by `dap health report`).
+# Only runs from main, so the public page appears with the finished rebuild.
+on:
+  push:
+    branches: [main]
+    paths: ["reports/map/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/map
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -39,3 +39,14 @@ def test_no_sa4_in_both_train_and_test(data, repeat):
     sa4 = data.meta.sa4_code.to_numpy()
     for train, test in splits(data, "spatial", repeat):
         assert not set(sa4[train]) & set(sa4[test])
+
+
+def test_committed_map_matches_the_data():
+    from dap.common.io import read_json
+    from dap.health import report
+
+    committed = paths.reports_dir() / report.MAP_DIR / "index.html"
+    results = read_json(paths.reports_dir() / "results.json")
+    assert committed.read_text(encoding="utf-8") == report.render(report.load(), results), (
+        "the committed map is stale: run `uv run dap health report`"
+    )
