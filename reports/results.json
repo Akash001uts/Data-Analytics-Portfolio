@@ -1,0 +1,735 @@
+{
+  "best_model_spatial_cv": "lightgbm",
+  "cv": {
+    "folds": 5,
+    "repeats": 5,
+    "schemes": [
+      "spatial",
+      "random"
+    ],
+    "seed": 20261006
+  },
+  "interpretation": {
+    "ridge_alpha": 14.68,
+    "ridge_standardised_coefficients": {
+      "age_65_plus_pct": -0.03026,
+      "born_nes_pct": -0.05511,
+      "bowel_screening_pct": -0.09422,
+      "dsp_pct": 0.02606,
+      "early_school_leavers_asr": -0.06797,
+      "homelessness_asr": 0.04058,
+      "housing_stress_pct": -0.07995,
+      "irsd_score": -0.0259,
+      "jobless_families_pct": -0.03101,
+      "lf_participation_pct": 0.0284,
+      "no_motor_vehicle_pct": -0.02643,
+      "pensioner_concession_card_pct": -0.02274,
+      "poor_english_pct": -0.02335,
+      "private_health_insurance_pct": -0.1019,
+      "single_parent_families_pct": 0.06398
+    },
+    "shap_direction_rank_r": {
+      "aged_care_places_per_1000": 0.9227,
+      "bowel_screening_pct": -0.9338,
+      "dsp_pct": 0.5727,
+      "gp_after_hours_per_100": 0.844,
+      "homelessness_asr": 0.887,
+      "housing_stress_pct": -0.9539,
+      "learning_or_earning_pct": -0.6315,
+      "low_income_welfare_families_pct": 0.9167,
+      "private_health_insurance_pct": -0.9522,
+      "single_parent_families_pct": 0.9372
+    },
+    "shap_mean_abs_log": {
+      "age_0_14_pct": 0.01345,
+      "aged_care_places_per_1000": 0.01898,
+      "born_nes_pct": 0.01697,
+      "bowel_screening_pct": 0.03542,
+      "breast_screening_pct": 0.01786,
+      "dsp_pct": 0.02507,
+      "gp_after_hours_per_100": 0.01884,
+      "homelessness_asr": 0.01983,
+      "housing_stress_pct": 0.03151,
+      "learning_or_earning_pct": 0.02265,
+      "lf_participation_pct": 0.01171,
+      "low_income_welfare_families_pct": 0.01886,
+      "private_health_insurance_pct": 0.04923,
+      "single_parent_families_pct": 0.02851,
+      "unemployment_benefit_pct": 0.01198
+    },
+    "spatial_lag": {
+      "features": [
+        "irsd_score",
+        "age_65_plus_pct",
+        "aboriginal_pct",
+        "ra_outer_regional_share",
+        "ra_remote_share",
+        "private_health_insurance_pct",
+        "gp_services_per_100",
+        "km_to_public_hospital"
+      ],
+      "pseudo_r2": 0.7881,
+      "residual_moran_I": 0.04416,
+      "rho": 0.6436,
+      "standardised_coefficients": {
+        "aboriginal_pct": 0.07318,
+        "age_65_plus_pct": -0.03008,
+        "gp_services_per_100": 0.009092,
+        "irsd_score": -0.03389,
+        "km_to_public_hospital": -0.03009,
+        "private_health_insurance_pct": -0.05361,
+        "ra_outer_regional_share": -0.01154,
+        "ra_remote_share": 0.0002064
+      }
+    }
+  },
+  "models": {
+    "lightgbm": {
+      "label": "LightGBM",
+      "largest_over": {
+        "observed": 1805.0,
+        "predicted": 3078.0,
+        "sa3": "South East Coast"
+      },
+      "largest_under": {
+        "observed": 9690.0,
+        "predicted": 3241.0,
+        "sa3": "Alice Springs"
+      },
+      "optimism_r2": 0.1292,
+      "random": {
+        "mae": {
+          "mean": 292.4,
+          "sd": 8.456
+        },
+        "r2": {
+          "mean": 0.6792,
+          "sd": 0.02335
+        },
+        "r2_log": {
+          "mean": 0.6862,
+          "sd": 0.01593
+        },
+        "rmse": {
+          "mean": 438.6,
+          "sd": 16.01
+        }
+      },
+      "residual_moran_I": 0.5081,
+      "spatial": {
+        "mae": {
+          "mean": 337.8,
+          "sd": 12.43
+        },
+        "r2": {
+          "mean": 0.55,
+          "sd": 0.07755
+        },
+        "r2_log": {
+          "mean": 0.5809,
+          "sd": 0.04124
+        },
+        "rmse": {
+          "mean": 518.3,
+          "sd": 43.13
+        }
+      }
+    },
+    "national_mean": {
+      "label": "National mean",
+      "largest_over": {
+        "observed": 1548.0,
+        "predicted": 2563.0,
+        "sa3": "Southern Highlands"
+      },
+      "largest_under": {
+        "observed": 9690.0,
+        "predicted": 2481.0,
+        "sa3": "Alice Springs"
+      },
+      "optimism_r2": 0.006384,
+      "random": {
+        "mae": {
+          "mean": 510.7,
+          "sd": 1.512
+        },
+        "r2": {
+          "mean": -0.0175,
+          "sd": 0.003221
+        },
+        "r2_log": {
+          "mean": -0.007501,
+          "sd": 0.004385
+        },
+        "rmse": {
+          "mean": 781.5,
+          "sd": 1.236
+        }
+      },
+      "residual_moran_I": 0.7101,
+      "spatial": {
+        "mae": {
+          "mean": 513.4,
+          "sd": 2.571
+        },
+        "r2": {
+          "mean": -0.02389,
+          "sd": 0.006034
+        },
+        "r2_log": {
+          "mean": -0.01672,
+          "sd": 0.007066
+        },
+        "rmse": {
+          "mean": 784.0,
+          "sd": 2.309
+        }
+      }
+    },
+    "remoteness_state": {
+      "label": "Remoteness x state means",
+      "largest_over": {
+        "observed": 1896.0,
+        "predicted": 6574.0,
+        "sa3": "Esperance"
+      },
+      "largest_under": {
+        "observed": 9690.0,
+        "predicted": 2907.0,
+        "sa3": "Alice Springs"
+      },
+      "optimism_r2": 0.09454,
+      "random": {
+        "mae": {
+          "mean": 392.9,
+          "sd": 4.931
+        },
+        "r2": {
+          "mean": 0.4318,
+          "sd": 0.01596
+        },
+        "r2_log": {
+          "mean": 0.4209,
+          "sd": 0.01351
+        },
+        "rmse": {
+          "mean": 584.0,
+          "sd": 8.168
+        }
+      },
+      "residual_moran_I": 0.3466,
+      "spatial": {
+        "mae": {
+          "mean": 416.6,
+          "sd": 8.183
+        },
+        "r2": {
+          "mean": 0.3372,
+          "sd": 0.07694
+        },
+        "r2_log": {
+          "mean": 0.3505,
+          "sd": 0.04106
+        },
+        "rmse": {
+          "mean": 629.9,
+          "sd": 35.93
+        }
+      }
+    },
+    "ridge": {
+      "label": "Ridge regression",
+      "largest_over": {
+        "observed": 7109.0,
+        "predicted": 28860.0,
+        "sa3": "Daly - Tiwi - West Arnhem"
+      },
+      "largest_under": {
+        "observed": 6620.0,
+        "predicted": 3062.0,
+        "sa3": "Maryborough"
+      },
+      "optimism_r2": 0.1112,
+      "random": {
+        "mae": {
+          "mean": 310.7,
+          "sd": 10.25
+        },
+        "r2": {
+          "mean": 0.5192,
+          "sd": 0.1883
+        },
+        "r2_log": {
+          "mean": 0.6622,
+          "sd": 0.02068
+        },
+        "rmse": {
+          "mean": 530.4,
+          "sd": 95.51
+        }
+      },
+      "residual_moran_I": 0.3739,
+      "spatial": {
+        "mae": {
+          "mean": 332.2,
+          "sd": 10.77
+        },
+        "r2": {
+          "mean": 0.408,
+          "sd": 0.2544
+        },
+        "r2_log": {
+          "mean": 0.6128,
+          "sd": 0.02682
+        },
+        "rmse": {
+          "mean": 586.6,
+          "sd": 118.6
+        }
+      }
+    },
+    "spatial_lag": {
+      "label": "Spatial lag (ML)",
+      "largest_over": {
+        "observed": 1907.0,
+        "predicted": 4343.0,
+        "sa3": "Fairfield"
+      },
+      "largest_under": {
+        "observed": 6620.0,
+        "predicted": 3144.0,
+        "sa3": "Maryborough"
+      },
+      "optimism_r2": 0.08414,
+      "random": {
+        "mae": {
+          "mean": 398.3,
+          "sd": 4.689
+        },
+        "r2": {
+          "mean": 0.5136,
+          "sd": 0.01906
+        },
+        "r2_log": {
+          "mean": 0.4641,
+          "sd": 0.009632
+        },
+        "rmse": {
+          "mean": 540.3,
+          "sd": 10.5
+        }
+      },
+      "residual_moran_I": 0.6016,
+      "spatial": {
+        "mae": {
+          "mean": 427.4,
+          "sd": 13.38
+        },
+        "r2": {
+          "mean": 0.4294,
+          "sd": 0.05068
+        },
+        "r2_log": {
+          "mean": 0.3647,
+          "sd": 0.04406
+        },
+        "rmse": {
+          "mean": 584.8,
+          "sd": 26.32
+        }
+      }
+    }
+  },
+  "residuals": {
+    "areas_over_20pct_above": 39,
+    "areas_over_20pct_below": 28,
+    "lisa_clusters": {
+      "High-high": 32,
+      "High-low": 6,
+      "Low-high": 2,
+      "Low-low": 49,
+      "Not significant": 238
+    },
+    "model": "lightgbm",
+    "moran_log_ratio": {
+      "I": 0.5081,
+      "expected_I": -0.003067,
+      "p_sim": 0.001,
+      "permutations": 999,
+      "z_sim": 13.14
+    },
+    "most_above_expected": [
+      {
+        "expected": 2997.0,
+        "observed": 6620.0,
+        "pct_vs_expected": 120.9,
+        "sa3": "Maryborough",
+        "state": "Queensland"
+      },
+      {
+        "expected": 4623.0,
+        "observed": 9690.0,
+        "pct_vs_expected": 109.6,
+        "sa3": "Alice Springs",
+        "state": "Northern Territory"
+      },
+      {
+        "expected": 2714.0,
+        "observed": 4773.0,
+        "pct_vs_expected": 75.87,
+        "sa3": "Palmerston",
+        "state": "Northern Territory"
+      },
+      {
+        "expected": 2746.0,
+        "observed": 4713.0,
+        "pct_vs_expected": 71.62,
+        "sa3": "Hervey Bay",
+        "state": "Queensland"
+      },
+      {
+        "expected": 5131.0,
+        "observed": 8590.0,
+        "pct_vs_expected": 67.4,
+        "sa3": "Kimberley",
+        "state": "Western Australia"
+      },
+      {
+        "expected": 4646.0,
+        "observed": 7632.0,
+        "pct_vs_expected": 64.26,
+        "sa3": "Katherine",
+        "state": "Northern Territory"
+      },
+      {
+        "expected": 2785.0,
+        "observed": 4214.0,
+        "pct_vs_expected": 51.28,
+        "sa3": "Campaspe",
+        "state": "Victoria"
+      },
+      {
+        "expected": 3625.0,
+        "observed": 5473.0,
+        "pct_vs_expected": 50.97,
+        "sa3": "East Pilbara",
+        "state": "Western Australia"
+      },
+      {
+        "expected": 4750.0,
+        "observed": 7109.0,
+        "pct_vs_expected": 49.65,
+        "sa3": "Daly - Tiwi - West Arnhem",
+        "state": "Northern Territory"
+      },
+      {
+        "expected": 2955.0,
+        "observed": 4324.0,
+        "pct_vs_expected": 46.33,
+        "sa3": "Port Douglas - Daintree",
+        "state": "Queensland"
+      }
+    ],
+    "most_below_expected": [
+      {
+        "expected": 3359.0,
+        "observed": 2140.0,
+        "pct_vs_expected": -36.29,
+        "sa3": "West Coast",
+        "state": "Tasmania"
+      },
+      {
+        "expected": 2825.0,
+        "observed": 1805.0,
+        "pct_vs_expected": -36.12,
+        "sa3": "South East Coast",
+        "state": "Tasmania"
+      },
+      {
+        "expected": 3577.0,
+        "observed": 2335.0,
+        "pct_vs_expected": -34.72,
+        "sa3": "Maryborough - Pyrenees",
+        "state": "Victoria"
+      },
+      {
+        "expected": 2706.0,
+        "observed": 1810.0,
+        "pct_vs_expected": -33.11,
+        "sa3": "Huon - Bruny Island",
+        "state": "Tasmania"
+      },
+      {
+        "expected": 2295.0,
+        "observed": 1548.0,
+        "pct_vs_expected": -32.55,
+        "sa3": "Southern Highlands",
+        "state": "New South Wales"
+      },
+      {
+        "expected": 3660.0,
+        "observed": 2546.0,
+        "pct_vs_expected": -30.44,
+        "sa3": "Kempsey - Nambucca",
+        "state": "New South Wales"
+      },
+      {
+        "expected": 2701.0,
+        "observed": 1896.0,
+        "pct_vs_expected": -29.81,
+        "sa3": "Esperance",
+        "state": "Western Australia"
+      },
+      {
+        "expected": 3361.0,
+        "observed": 2391.0,
+        "pct_vs_expected": -28.86,
+        "sa3": "Central Highlands (Tas.)",
+        "state": "Tasmania"
+      },
+      {
+        "expected": 3804.0,
+        "observed": 2752.0,
+        "pct_vs_expected": -27.65,
+        "sa3": "Moree - Narrabri",
+        "state": "New South Wales"
+      },
+      {
+        "expected": 2593.0,
+        "observed": 1907.0,
+        "pct_vs_expected": -26.46,
+        "sa3": "Fairfield",
+        "state": "New South Wales"
+      }
+    ],
+    "pct_vs_expected_by_state": {
+      "Australian Capital Territory": 10.61,
+      "New South Wales": -7.708,
+      "Northern Territory": 57.16,
+      "Queensland": 12.23,
+      "South Australia": 0.7937,
+      "Tasmania": -8.502,
+      "Victoria": 2.288,
+      "Western Australia": -6.864
+    },
+    "share_of_population_within_10pct": 0.5015
+  },
+  "sensitivity": {
+    "acute_conditions_target": {
+      "areas": 326,
+      "lightgbm": {
+        "mae": {
+          "mean": 176.8,
+          "sd": 5.491
+        },
+        "r2": {
+          "mean": 0.5383,
+          "sd": 0.03841
+        },
+        "r2_log": {
+          "mean": 0.5535,
+          "sd": 0.01952
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 173.6,
+          "sd": 3.383
+        },
+        "r2": {
+          "mean": 0.4966,
+          "sd": 0.09262
+        },
+        "r2_log": {
+          "mean": 0.5748,
+          "sd": 0.01874
+        }
+      }
+    },
+    "chronic_conditions_target": {
+      "areas": 326,
+      "lightgbm": {
+        "mae": {
+          "mean": 176.2,
+          "sd": 4.584
+        },
+        "r2": {
+          "mean": 0.5477,
+          "sd": 0.04527
+        },
+        "r2_log": {
+          "mean": 0.6103,
+          "sd": 0.02559
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 173.2,
+          "sd": 6.054
+        },
+        "r2": {
+          "mean": 0.3282,
+          "sd": 0.3181
+        },
+        "r2_log": {
+          "mean": 0.6379,
+          "sd": 0.02673
+        }
+      }
+    },
+    "main": {
+      "areas": 327,
+      "lightgbm": {
+        "mae": {
+          "mean": 337.8,
+          "sd": 12.43
+        },
+        "r2": {
+          "mean": 0.55,
+          "sd": 0.07755
+        },
+        "r2_log": {
+          "mean": 0.5809,
+          "sd": 0.04124
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 332.2,
+          "sd": 10.77
+        },
+        "r2": {
+          "mean": 0.408,
+          "sd": 0.2544
+        },
+        "r2_log": {
+          "mean": 0.6128,
+          "sd": 0.02682
+        }
+      }
+    },
+    "target_2018_19_without_act": {
+      "areas": 315,
+      "lightgbm": {
+        "mae": {
+          "mean": 299.7,
+          "sd": 8.058
+        },
+        "r2": {
+          "mean": 0.6452,
+          "sd": 0.00805
+        },
+        "r2_log": {
+          "mean": 0.6555,
+          "sd": 0.01019
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 289.6,
+          "sd": 9.589
+        },
+        "r2": {
+          "mean": 0.3876,
+          "sd": 0.2963
+        },
+        "r2_log": {
+          "mean": 0.6939,
+          "sd": 0.02024
+        }
+      }
+    },
+    "with_tier_b_health_status": {
+      "areas": 327,
+      "lightgbm": {
+        "mae": {
+          "mean": 297.3,
+          "sd": 10.75
+        },
+        "r2": {
+          "mean": 0.6261,
+          "sd": 0.08899
+        },
+        "r2_log": {
+          "mean": 0.6636,
+          "sd": 0.03926
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 343.6,
+          "sd": 31.7
+        },
+        "r2": {
+          "mean": -5.425,
+          "sd": 5.678
+        },
+        "r2_log": {
+          "mean": 0.6143,
+          "sd": 0.04379
+        }
+      }
+    },
+    "without_private_insurance": {
+      "areas": 327,
+      "lightgbm": {
+        "mae": {
+          "mean": 350.8,
+          "sd": 16.13
+        },
+        "r2": {
+          "mean": 0.528,
+          "sd": 0.07851
+        },
+        "r2_log": {
+          "mean": 0.5562,
+          "sd": 0.04209
+        }
+      },
+      "ridge": {
+        "mae": {
+          "mean": 350.0,
+          "sd": 13.31
+        },
+        "r2": {
+          "mean": 0.2237,
+          "sd": 0.348
+        },
+        "r2_log": {
+          "mean": 0.5689,
+          "sd": 0.03477
+        }
+      }
+    }
+  },
+  "spatial_autocorrelation": {
+    "lisa_clusters": {
+      "High-high": 51,
+      "High-low": 2,
+      "Low-high": 2,
+      "Low-low": 52,
+      "Not significant": 220
+    },
+    "moran_log_pph": {
+      "I": 0.7083,
+      "expected_I": -0.003067,
+      "p_sim": 0.001,
+      "permutations": 999,
+      "z_sim": 18.58
+    },
+    "weights": {
+      "areas": 327,
+      "components": 2,
+      "islands": 0,
+      "mean_neighbours": 4.758
+    }
+  },
+  "target": {
+    "areas": 327,
+    "features": 42,
+    "modelled_as": "log(rate); errors on the rate scale after exp(), population-weighted",
+    "name": "Potentially preventable hospitalisations, age-standardised rate per 100,000",
+    "sa4_groups": 88,
+    "year": "2023-24"
+  }
+}

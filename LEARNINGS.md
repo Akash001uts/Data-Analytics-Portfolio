@@ -93,3 +93,31 @@ This turned out to be the most important decision so far.
 - **Say what your quintiles are.** I split areas into population-weighted quintiles, so each holds about a fifth of
   the people rather than a fifth of the areas. Both are reasonable, but they give different answers, so the chart has
   to say which one it uses.
+
+## Spatial statistics and models (7 Oct 2026)
+
+- **Test the way the model will be used.** Neighbouring areas have very similar rates (Moran's I is high), so with a
+  random split most test areas have a neighbour in the training data. Holding out whole SA4 regions instead knocked
+  a noticeable amount off every model's score, and the most off the most flexible one. Reporting only the random
+  split would have overstated my results.
+- **A model that looks best in-sample can be the one that cheats most.** The spatial lag model explained most of the
+  variation when fitted on every area, and left almost no pattern in its residuals. But its strength was using the
+  neighbours' actual rates. To predict an area whose whole region is held out, I had to use the version that only
+  needs features, and then it was one of the weaker models. Giving it the neighbours' real rates in cross-validation
+  would have leaked the answer without any error message.
+- **Prove your leakage tests can fail.** I wrote a test that changes the test areas' rates and checks the
+  predictions don't move. A passing test only means something if it would catch a leak, so I wrote deliberately
+  leaky versions (a spatial lag that used neighbours' rates, a mean taken over all rows, and a scaler fitted on
+  everything) and checked that each one failed.
+- **A weird score is worth chasing.** Ridge regression had a huge spread between repeats on the rate scale but was
+  the best model on the log scale. That looked like a bug. It turned out to be extrapolation: when a remote NT region
+  is held out, ridge carries its straight line past anything it has seen, and converting back from the log turns a
+  moderate miss into a rate several times too high. Trees have the opposite problem and can't predict above their
+  training range. Both are real, so I report both scales.
+- **Rule out your own mistakes before calling something a finding.** Maryborough in Queensland came out about double
+  its expected rate. There's also a Maryborough in Victoria, so my first thought was a bad join. The raw AIHW tables
+  show it has been well above its neighbours in every year since 2017-18, so it's real.
+- **Generate the numbers, then test that they match.** The results table in the project README is written by
+  `dap health train` from `results.json`, and a test fails if the two drift apart. I still checked the hand-written
+  notebook text against the outputs, and found two sentences that said more than the numbers did: one claimed both
+  models agreed on features they didn't, and one said GP use didn't matter when after-hours GP visits did show up.

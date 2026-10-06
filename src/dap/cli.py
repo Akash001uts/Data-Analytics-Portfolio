@@ -9,7 +9,6 @@ from dap.common import paths
 from dap.common.manifest import ManifestMismatch, load_manifest
 
 NOT_YET = {
-    ("health", "train"): "Phase 3",
     ("health", "report"): "Phase 4",
     ("sentiment", "fetch"): "Phase 5",
     ("sentiment", "train"): "Phase 5",
@@ -43,6 +42,21 @@ def _health_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def _health_train(args: argparse.Namespace) -> int:
+    from dap.health.train import train
+
+    out = train()
+    print(f"wrote {out['results']}")
+    print(f"wrote {out['residuals']}")
+    for f in out["figures"]:
+        print(f"wrote {f}")
+    models = out["stats"]["models"]
+    for m in models.values():
+        sp, rd = m["spatial"]["r2"]["mean"], m["random"]["r2"]["mean"]
+        print(f"{m['label']:26} R2 grouped by SA4 {sp:6.3f}   random {rd:6.3f}")
+    return 0
+
+
 def _not_yet(project: str, command: str) -> int:
     phase = NOT_YET[project, command]
     print(f"`dap {project} {command}` is not implemented yet (planned for {phase}).")
@@ -65,9 +79,10 @@ def build_parser() -> argparse.ArgumentParser:
     build = hcmd.add_parser("build", help="clean and join the raw data into one SA3 table")
     build.add_argument("--raw-dir", help="where raw files are (default: data/raw)")
     build.set_defaults(func=_health_build)
-    for name in ("train", "report"):
-        p = hcmd.add_parser(name, help=f"not implemented yet ({NOT_YET['health', name]})")
-        p.set_defaults(func=lambda _a, n=name: _not_yet("health", n))
+    train = hcmd.add_parser("train", help="spatial statistics, models and reports/results.json")
+    train.set_defaults(func=_health_train)
+    report = hcmd.add_parser("report", help=f"not implemented yet ({NOT_YET['health', 'report']})")
+    report.set_defaults(func=lambda _a: _not_yet("health", "report"))
 
     sentiment = projects.add_parser("sentiment", help="sentiment evaluation project")
     scmd = sentiment.add_subparsers(dest="command", required=True)
