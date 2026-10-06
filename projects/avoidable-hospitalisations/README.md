@@ -55,14 +55,14 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 
 ### From exploring the data ([notebook 01](notebooks/01_explore_the_data.ipynb))
 
-- **Remoteness and disadvantage both line up with higher rates,** and they overlap a lot. Remote areas are in a
-  league of their own, and the spread between areas widens the further you get from the cities.
+- **Remoteness and disadvantage both line up with higher rates,** and they overlap a lot. The rate climbs at every
+  step away from the major cities, and remote areas are in a league of their own, with the biggest spread too.
 - **Nearly every strong relationship is some version of "this area is poorer".** Welfare dependence, unemployment
   benefits, Health Care Cards, single-parent families, the IRSD and private health insurance all point the same way,
   and they're so closely related to each other that a model can't really tell them apart.
-- **GP visits per person barely relate to the rate on their own,** which surprised me, since PPH is meant to reflect
-  primary care. My guess is that sicker areas both see their GP more and end up in hospital more. The models should
-  help untangle that.
+- **GP use barely relates to the rate,** which surprised me, since PPH is meant to reflect primary care. I checked
+  whether it was just an age effect (the GP figures aren't age-standardised) and it isn't: it stays near zero after
+  allowing for age or disadvantage. I don't know why yet. The models should help untangle it.
 - **Fairfield in Sydney stands out.** It's one of the most disadvantaged areas in the country, but its rate is below
   the national median. More than half its residents were born in non-English-speaking countries, which fits what
   researchers call the "healthy migrant effect". I'll see whether the residual map picks it out.

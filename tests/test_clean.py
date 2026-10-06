@@ -160,3 +160,17 @@ def test_hospital_points_keep_open_public_with_coordinates(fixtures_dir, tmp_pat
     # H9002 is private, H9003 closed, H9004 has no coordinates, LHN901 is not a hospital.
     assert h.code.tolist() == ["H9001"]
     assert h.reports_ed.tolist() == [True]
+
+
+def test_pre_covid_rate_leaves_out_the_act():
+    raw = _pph_rows(
+        [
+            ("2023-24", "80101", "Total PPH", "All persons", "2000", "900"),
+            ("2018-19", "80101", "Total PPH", "All persons", "2100", "950"),
+            ("2023-24", "10101", "Total PPH", "All persons", "2500", "1250"),
+            ("2018-19", "10101", "Total PPH", "All persons", "2700", "1300"),
+        ]
+    )
+    w = clean.target_columns(clean.tidy_pph(raw))
+    assert np.isnan(w.loc["80101", "pph_asr_2018_19"])
+    assert w.loc["10101", "pph_asr_2018_19"] == 2700
