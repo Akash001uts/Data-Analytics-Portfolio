@@ -10,7 +10,7 @@ admissions. What I find more interesting is the leftover part: once you account 
 and access profile, which areas still have more (or fewer) admissions than you'd predict? Those are the places where
 something else is going on, good or bad.
 
-**Status:** data sourced and checked, analysis in progress. Results will go here once the models are built, and the
+**Status:** data cleaned and explored, modelling next. Results will go here once the models are built, and the
 numbers in this README will be generated from `reports/results.json`, not typed in by hand.
 
 ## The question
@@ -38,8 +38,8 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   which columns the model is allowed to use. ([data.md](data.md))
 - [x] **Set up the project properly.** A Python package, a `dap` command line tool, a manifest that checks every
   download, and tests for the leakage rules. ([LEARNINGS.md](../../LEARNINGS.md) has the details.)
-- [ ] **Clean and join everything into one table per area, then explore it** with maps, and rates by remoteness and
-  disadvantage.
+- [x] **Clean and join everything into one table per area, then explore it** with maps, and rates by remoteness and
+  disadvantage. ([notebook 01](notebooks/01_explore_the_data.ipynb))
 - [ ] **Check whether neighbouring areas look alike** (spatial autocorrelation: Moran's I and hot spot maps). If they
   do, an ordinary random train/test split will flatter the model.
 - [ ] **Build models from simple to complex:** a national average, then averages by state and remoteness, then
@@ -51,7 +51,26 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 
 ## What I've found so far
 
-These come from checking the data, before any modelling. The exact numbers are in [data.md](data.md).
+![Map of potentially preventable hospitalisation rates by SA3 across Australia, 2023-24, with insets for Sydney, Melbourne, Brisbane and Perth](../../reports/figures/01_map.png)
+
+### From exploring the data ([notebook 01](notebooks/01_explore_the_data.ipynb))
+
+- **Remoteness and disadvantage both line up with higher rates,** and they overlap a lot. Remote areas are in a
+  league of their own, and the spread between areas widens the further you get from the cities.
+- **Nearly every strong relationship is some version of "this area is poorer".** Welfare dependence, unemployment
+  benefits, Health Care Cards, single-parent families, the IRSD and private health insurance all point the same way,
+  and they're so closely related to each other that a model can't really tell them apart.
+- **GP visits per person barely relate to the rate on their own,** which surprised me, since PPH is meant to reflect
+  primary care. My guess is that sicker areas both see their GP more and end up in hospital more. The models should
+  help untangle that.
+- **Fairfield in Sydney stands out.** It's one of the most disadvantaged areas in the country, but its rate is below
+  the national median. More than half its residents were born in non-English-speaking countries, which fits what
+  researchers call the "healthy migrant effect". I'll see whether the residual map picks it out.
+- **COVID shifted the level, not the pattern.** Rates dipped nationally, but the ranking of areas before and after is
+  very similar, so using 2023-24 is safe.
+- **The rate is very skewed,** with a few remote areas far above the rest, so I'll model the log of the rate.
+
+### From checking the sources ([data.md](data.md))
 
 - **The most detailed data was the wrong choice.** PHIDU publishes PPH for about 1,165 small areas, which is much
   more detail than the AIHW's 340 SA3s. But it only counts public hospitals, and it only covers 2020-21, the middle of

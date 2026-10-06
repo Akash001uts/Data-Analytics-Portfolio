@@ -11,7 +11,7 @@ tag if you want to see where I started.
 
 | Project | The question | Status |
 | --- | --- | --- |
-| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Data sourced and checked, analysis in progress |
+| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Data cleaned and explored, modelling next |
 | [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Planned |
 
 ## What I've learnt so far
@@ -99,8 +99,25 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    `data/manifest.yaml`. Run `uv run pytest` again afterwards and the skipped tests will run too. They check every
    feature I use against the real spreadsheets.
 
-5. **What isn't built yet.** `dap health build`, `train` and `report` will clean the data, fit the models and make the
-   maps. For now they just tell you which phase they're planned for. I'll update this section as they're built.
+5. **Build the cleaned table.**
+
+   ```
+   uv run dap health build
+   ```
+
+   This cleans and joins everything into one table with a row per SA3 (`data/processed/health_sa3.gpkg`) and writes a
+   small summary to `reports/data_summary.json`. It takes about a minute. With the data downloaded, `uv run pytest`
+   also runs the full build and checks the result.
+
+6. **Open the notebooks.** They're already run, so you can read them on GitHub. To run them yourself:
+
+   ```
+   uv sync --group notebooks
+   uv run jupyter lab projects/avoidable-hospitalisations/notebooks
+   ```
+
+7. **What isn't built yet.** `dap health train` and `report` will fit the models and make the maps. For now they just
+   tell you which phase they're planned for. I'll update this section as they're built.
 
 ### If something goes wrong
 

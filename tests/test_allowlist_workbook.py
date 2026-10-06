@@ -10,7 +10,7 @@ import pytest
 from dap.common import paths
 from dap.common.manifest import load_manifest
 from dap.health.features import ALLOWLIST, DENY_SHEET_RE
-from dap.health.phidu import read_header, read_rows, resolve_features, to_number
+from dap.health.phidu import locate, read_header, read_rows, resolve_features, to_number
 
 _manifest = load_manifest(paths.manifest_path())
 WORKBOOK = _manifest.get("phidu_sha_pha").path_in(paths.raw_dir())
@@ -71,12 +71,10 @@ def test_sheet_rows_hold_every_pha_then_every_sa3(workbook, expected_codes, shee
 @pytest.mark.parametrize("feature", PHIDU_FEATURES, ids=lambda f: f.name)
 def test_feature_column_is_numeric_for_almost_every_sa3(workbook, expected_codes, feature):
     _, sa3s = expected_codes
-    col = next(
-        c
-        for c in read_header(workbook[feature.sheet])
-        if c.block == feature.block and c.measure == feature.measure
-    )
+    col = locate(feature, read_header(workbook[feature.sheet]))
     rows = read_rows(workbook[feature.sheet])
     values = [to_number(rows.totals[s][col.index]) for s in sa3s]
     missing = sum(v is None for v in values)
-    assert missing <= 0.05 * len(sa3s), f"{feature.name}: {missing} of {len(sa3s)} SA3s missing"
+    # Tier B's modelled estimates are unpublished for 20 SA3s, so it gets a looser limit.
+    limit = 0.05 if feature.tier == "A" else 0.10
+    assert missing <= limit * len(sa3s), f"{feature.name}: {missing} of {len(sa3s)} SA3s missing"

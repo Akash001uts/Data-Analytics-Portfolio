@@ -68,3 +68,24 @@ This turned out to be the most important decision so far.
   lint and tests from scratch, the same way CI does. The tests run on small made-up fixtures, and the ones that need
   the real spreadsheets skip cleanly until you download them. Doing this also caught a fixture file written with
   Windows line endings, and that my pre-commit hooks couldn't find `uv` because of how I'd installed it.
+
+## Cleaning, joining and a first look (7 Oct 2026)
+
+- **Spreadsheet headers aren't consistent, even within one workbook.** In the Census condition sheets, the actual
+  condition names ("People who reported they had asthma") sit in the second header row, under a caveat that spans the
+  whole sheet. My first fix was to always prefer the second row, which immediately broke a different sheet where the
+  second row is a sub-heading inside a block (Housing stress: mortgage, rental, and so on). The workbook tests caught
+  it straight away. The reader now keeps both rows and only accepts a match when exactly one column fits.
+- **Sometimes it's the test that's wrong.** A check that every remoteness share was between 0 and 1 failed. It turned
+  out two near-empty SA3s have no population, so their shares are missing, and a missing value isn't "between 0 and
+  1". I made the test say what I actually meant (no missing values where there's a target, and every value that is
+  there sits between 0 and 1) instead of patching the data to make the test pass.
+- **The obvious input isn't always the useful one.** I assumed GP visits per person would be one of the strongest
+  predictors, since PPH is meant to measure primary care. On its own it barely relates to the rate. That doesn't mean
+  GPs don't matter. Sicker areas probably use GPs more *and* end up in hospital more, and a raw correlation can't
+  separate those.
+- **Look at the outliers by name.** One dot on the scatter plot was very disadvantaged but had a low rate. Looking it
+  up gave Fairfield in Sydney, with a large migrant population. A summary statistic would have hidden it.
+- **Say what your quintiles are.** I split areas into population-weighted quintiles, so each holds about a fifth of
+  the people rather than a fifth of the areas. Both are reasonable, but they give different answers, so the chart has
+  to say which one it uses.
