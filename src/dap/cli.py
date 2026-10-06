@@ -34,7 +34,11 @@ def _health_fetch(args: argparse.Namespace) -> int:
 def _health_build(args: argparse.Namespace) -> int:
     from dap.health.build import build
 
-    out = build(raw_dir=Path(args.raw_dir) if args.raw_dir else paths.raw_dir())
+    try:
+        out = build(raw_dir=Path(args.raw_dir) if args.raw_dir else paths.raw_dir())
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
     print(f"wrote {out['table']}")
     print(f"wrote {out['summary']}")
     s = out["stats"]
@@ -45,7 +49,11 @@ def _health_build(args: argparse.Namespace) -> int:
 def _health_train(args: argparse.Namespace) -> int:
     from dap.health.train import train
 
-    out = train()
+    try:
+        out = train()
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
     print(f"wrote {out['results']}")
     print(f"wrote {out['residuals']}")
     for f in out["figures"]:
