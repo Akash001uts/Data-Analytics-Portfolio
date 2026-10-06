@@ -1,0 +1,175 @@
+# Data manifest for the health flagship.
+# Raw files are never committed. `dap health fetch` downloads each entry to data/raw/<id>/<file>,
+# checks bytes and sha256, and fails with an "upstream changed" error on a mismatch.
+# Recorded 2026-10-06 during Phase 0. See docs/data.md for how each source is used.
+
+version: 1
+retrieved: 2026-10-06
+raw_dir: data/raw
+
+sources:
+
+  - id: phidu_sha_pha
+    title: Social Health Atlas of Australia, data by Population Health Area (2021 ASGS)
+    publisher: Public Health Information Development Unit (PHIDU), Torrens University Australia
+    release: June 2026
+    url: https://phidu.torrens.edu.au/current/data/sha-aust/pha/phidu_data_pha_aust.xlsx
+    # /current/ is overwritten at each release (the PPH errata re-release in Dec 2025 changed it in place).
+    # Older releases are archived as yearly zips, e.g. /data-archive/sha-aust/2015-onwards/phidu_data_2025_pha_aust.zip.
+    # The 2026 zip was not archived as of 2026-10-06 (that URL returned HTTP 500). Once it appears, add it here
+    # as fallback_url and confirm its contents match the sha256 below.
+    file: phidu_data_pha_aust.xlsx
+    bytes: 69229030
+    sha256: 21b65a267854a4562ff9d1c46b13212f79bc505673c92e123e4bb1544f556aef
+    last_modified: 2026-06-23T04:45:37Z
+    geography: PHA 2021 (1,165 areas) plus SA3 and SA4 totals below the "AUSTRALIA+" row
+    licence: CC BY-NC-SA 3.0 AU
+    attribution: >-
+      Based on Public Health Information Development Unit (PHIDU), Torrens University Australia material from:
+      Social Health Atlas of Australia: Population Health Areas (online) 2026. Accessed 6 October 2026,
+      https://phidu.torrens.edu.au/social-health-atlases/data
+    used_for: [features, pha_descriptive_map]
+
+  - id: phidu_sa2_pha_concordance
+    title: SA2 to PHA concordance, 2021 and 2016
+    publisher: PHIDU, Torrens University Australia
+    url: https://phidu.torrens.edu.au/current/files-misc/sa2_to_pha_concordance_2021_and_2016.xlsx
+    file: sa2_to_pha_concordance_2021_and_2016.xlsx
+    bytes: 298535
+    sha256: 35cfe353c04569e23b4ff20383c16902877528aa84c7fc7aec63bc7d432e7f7e
+    last_modified: 2025-11-18T03:45:32Z
+    sheet: 2021 SA2 to PHA concordance
+    licence: CC BY-NC-SA 3.0 AU
+    used_for: [pha_to_sa3_nesting]
+
+  - id: phidu_notes
+    title: Social Health Atlas notes on the data (sources and methods for every indicator)
+    publisher: PHIDU, Torrens University Australia
+    url: https://phidu.torrens.edu.au/current/data/sha-aust/notes/phidu_data_sources_notes.pdf
+    file: phidu_data_sources_notes.pdf
+    bytes: 1659191
+    sha256: 7211ab25209a5b52539265866664dc40f850aa7d1fa2319f6a8480da30d27387
+    last_modified: 2026-06-19T01:31:03Z
+    licence: CC BY-NC-SA 3.0 AU
+    used_for: [documentation]
+
+  - id: aihw_pph_sa3
+    title: Potentially preventable hospitalisations in Australia by small geographic areas, 2017-18 to 2023-24 (HPF 76), data tables
+    publisher: Australian Institute of Health and Welfare (AIHW)
+    release: 2026-02-25
+    url: https://www.aihw.gov.au/getmedia/0c5ac2e1-9e5a-47db-948a-93253daea0a5/AIHW-HPF-76-potentially-preventable-hospitalisations-by-small-geographic-areas-2017-18-to-2023-24-data-tables.xlsx
+    file: AIHW-HPF-76-pph-small-areas-2017-18-to-2023-24-data-tables.xlsx
+    bytes: 9784916
+    sha256: 930881320de5e9e07e91c486bee4fcf4d6c7f1cd881ca1e86eda3a076cfbca8a
+    last_modified: 2026-01-23T06:05:09Z
+    sheet: Table 4
+    geography: SA3 2021 (340 areas, ASGS Edition 3), by SA2 of usual residence
+    coverage: public and private hospitals (National Hospital Morbidity Database)
+    licence: CC BY 4.0
+    attribution: Australian Institute of Health and Welfare (2026) Potentially preventable hospitalisations in Australia by small geographic areas, 2017-18 to 2023-24, AIHW, Australian Government.
+    used_for: [target]
+
+  - id: aihw_mbs_sa3
+    title: Medicare-subsidised GP, allied health and specialist health care across local areas, 2017-18 to 2024-25 (PHC 19), data tables
+    publisher: AIHW
+    release: 2026-03-26
+    url: https://www.aihw.gov.au/getmedia/deb8354f-9231-41d4-8035-a6561c11a762/aihw-phc-019-data-tables-1718-2425.xlsx
+    file: aihw-phc-019-data-tables-1718-2425.xlsx
+    bytes: 37652695
+    sha256: 90939bd1963b7b04bbe2fac014abee454e457187a26c2fcecc773b6f39da978e
+    last_modified: 2026-03-13T01:38:19Z
+    sheet: Table 3
+    geography: SA3 2021, allocated from Medicare enrolment postcode
+    licence: CC BY 4.0
+    attribution: Australian Institute of Health and Welfare (2026) Medicare-subsidised GP, allied health and specialist health care across local areas, AIHW, Australian Government.
+    used_for: [features]
+
+  - id: abs_sa2_boundaries
+    title: Statistical Areas Level 2, ASGS Edition 3 (2021), shapefile, GDA2020
+    publisher: Australian Bureau of Statistics (ABS)
+    url: https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files/SA2_2021_AUST_SHP_GDA2020.zip
+    file: SA2_2021_AUST_SHP_GDA2020.zip
+    bytes: 50678443
+    sha256: c4dc5bac209f01177eaa0715d27f32cdb09ab5784fb82979741556d2f8e6d148
+    last_modified: 2021-06-24T22:47:40Z
+    licence: CC BY 4.0
+    attribution: Australian Bureau of Statistics, Australian Statistical Geography Standard (ASGS) Edition 3, July 2021 - June 2026.
+    used_for: [geometry, sa3_dissolve, distance_centroids]
+
+  - id: abs_sa2_allocation
+    title: SA2 allocation file, ASGS Edition 3 (SA2 to SA3, SA4, GCCSA, state)
+    publisher: ABS
+    url: https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/allocation-files/SA2_2021_AUST.xlsx
+    file: SA2_2021_AUST.xlsx
+    bytes: 250022
+    sha256: 953cebfb02e55c7c36ed7f5c202d88a287528d9188d2f2f7d2b32b95834115b4
+    last_modified: 2021-06-24T06:42:26Z
+    licence: CC BY 4.0
+    used_for: [nesting_checks, cv_groups]
+
+  - id: abs_ra_allocation
+    title: Remoteness Areas 2021 allocation file (SA1 to RA)
+    publisher: ABS
+    url: https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/allocation-files/RA_2021_AUST.xlsx
+    file: RA_2021_AUST.xlsx
+    bytes: 3243428
+    sha256: 1e75ddd3c30abf1458627a54036f4c6e3a0704d4dd2bd4d270119fed89eb375c
+    last_modified: 2023-03-10T03:46:32Z
+    licence: CC BY 4.0
+    used_for: [features]
+
+  - id: abs_seifa_sa1
+    title: SEIFA 2021, Statistical Area Level 1 indexes (includes usual resident population per SA1)
+    publisher: ABS
+    url: https://www.abs.gov.au/statistics/people/people-and-communities/socio-economic-indexes-areas-seifa-australia/2021/Statistical%20Area%20Level%201%2C%20Indexes%2C%20SEIFA%202021.xlsx
+    file: Statistical_Area_Level_1_Indexes_SEIFA_2021.xlsx
+    bytes: 24375522
+    sha256: 598cf9c360a692205af8b3b0febfe00a884eaebc80dad806fafd770b5a987f65
+    last_modified: 2023-04-21T01:27:26Z
+    licence: CC BY 4.0
+    attribution: Australian Bureau of Statistics, Socio-Economic Indexes for Areas (SEIFA), Australia, 2021.
+    used_for: [ra_population_weights]
+
+  - id: abs_seifa_sa2
+    title: SEIFA 2021, Statistical Area Level 2 indexes
+    publisher: ABS
+    url: https://www.abs.gov.au/statistics/people/people-and-communities/socio-economic-indexes-areas-seifa-australia/2021/Statistical%20Area%20Level%202%2C%20Indexes%2C%20SEIFA%202021.xlsx
+    file: Statistical_Area_Level_2_Indexes_SEIFA_2021.xlsx
+    bytes: 1316059
+    sha256: 372124bbf1044e03216f87188f98b82d39a5a03a5138ed05e8f222abf8faf4f0
+    last_modified: 2023-04-21T01:28:28Z
+    licence: CC BY 4.0
+    used_for: [irsd_cross_check, sa2_population_weights]
+
+  # Live API: responses change over time, so these are pinned by data set ID and record counts, not by hash.
+  # fetch saves the JSON with a retrieval timestamp and fails if the counts move outside the tolerance.
+  - id: myhospitals_reporting_units
+    title: MyHospitals Data API, reporting units (hospital locations and public/private flag)
+    publisher: AIHW
+    url: https://myhospitalsapi.aihw.gov.au/api/v1/reporting-units
+    file: reporting_units.json
+    volatile: true
+    expect:
+      reporting_units: 1428
+      hospitals: 1166
+      hospitals_open_public: 692
+      hospitals_missing_coordinates: 46
+      tolerance_pct: 5
+    licence: CC BY 3.0 (as stated in the API's swagger info, linking to aihw.gov.au/copyright)
+    used_for: [distance_to_public_hospital]
+
+  - id: myhospitals_ed_presentations
+    title: MyHospitals Data API, MYH0035 "Number of patients presenting to the emergency department"
+    publisher: AIHW
+    url: https://myhospitalsapi.aihw.gov.au/api/v1/measures/MYH0035/data-items
+    file: ed_presentations_MYH0035.json
+    volatile: true
+    pin:
+      data_set_ids_2023_24: [10511, 10512, 10513, 10514, 10515]
+      data_set_ids_2020_21: [8389, 8390, 8391, 8392, 8393]
+    expect:
+      data_items: 22678
+      ed_hospitals_2023_24: 293   # reporting units of type H with a positive value
+      tolerance_pct: 5
+    licence: CC BY 3.0
+    used_for: [distance_to_reporting_ed]
