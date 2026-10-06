@@ -139,13 +139,13 @@ def missingness(table: pd.DataFrame) -> pd.DataFrame:
 # Figures
 
 
-def _classes(values: pd.Series, k: int = 7) -> np.ndarray:
+def quantile_classes(values: pd.Series, k: int = 7) -> np.ndarray:
     return np.unique(np.nanquantile(values, np.linspace(0, 1, k + 1)))
 
 
 def choropleth(table: gpd.GeoDataFrame, column: str = "pph_asr", title: str = "") -> plt.Figure:
     """Australia-wide map with insets for four capitals, in quantile classes of one blue ramp."""
-    bins = _classes(table[column])
+    bins = quantile_classes(table[column])
     cmap = ListedColormap(BLUE_RAMP[: len(bins) - 1])
     norm = BoundaryNorm(bins, cmap.N)
     colours = table[column].map(lambda v: MISSING if pd.isna(v) else to_hex(cmap(norm(v))))

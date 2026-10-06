@@ -9,7 +9,6 @@ from dap.common import paths
 from dap.common.manifest import ManifestMismatch, load_manifest
 
 NOT_YET = {
-    ("health", "report"): "Phase 4",
     ("sentiment", "fetch"): "Phase 5",
     ("sentiment", "train"): "Phase 5",
     ("sentiment", "report"): "Phase 5",
@@ -65,6 +64,18 @@ def _health_train(args: argparse.Namespace) -> int:
     return 0
 
 
+def _health_report(args: argparse.Namespace) -> int:
+    from dap.health.report import report
+
+    try:
+        out = report()
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    print(f"wrote {out} ({out.stat().st_size / 1e6:.1f} MB)")
+    return 0
+
+
 def _not_yet(project: str, command: str) -> int:
     phase = NOT_YET[project, command]
     print(f"`dap {project} {command}` is not implemented yet (planned for {phase}).")
@@ -89,8 +100,8 @@ def build_parser() -> argparse.ArgumentParser:
     build.set_defaults(func=_health_build)
     train = hcmd.add_parser("train", help="spatial statistics, models and reports/results.json")
     train.set_defaults(func=_health_train)
-    report = hcmd.add_parser("report", help=f"not implemented yet ({NOT_YET['health', 'report']})")
-    report.set_defaults(func=lambda _a: _not_yet("health", "report"))
+    report = hcmd.add_parser("report", help="the interactive map, reports/map/index.html")
+    report.set_defaults(func=_health_report)
 
     sentiment = projects.add_parser("sentiment", help="sentiment evaluation project")
     scmd = sentiment.add_subparsers(dest="command", required=True)

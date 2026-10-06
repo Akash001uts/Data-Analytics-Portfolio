@@ -10,7 +10,7 @@ admissions. What I find more interesting is the leftover part: once you account 
 and access profile, which areas still have more (or fewer) admissions than you'd predict? Those are the places where
 something else is going on, good or bad.
 
-**Status:** models built and tested, interactive map next. Every number in the results table below is generated
+**Status:** models built and tested, and the interactive map is built. Publishing the map online is next. Every number in the results table below is generated
 from `reports/results.json` by `dap health train`, not typed in by hand, and a test fails if they drift apart.
 
 ## The question
@@ -47,7 +47,10 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 - [x] **Validate with spatial cross-validation.** Whole regions (SA4s) are held out together, compared with a random
   split to show how much neighbouring areas inflate the score.
 - [x] **Map the residuals**, the "better or worse than expected" map, which is the main result.
-- [ ] **Write it up**, including an interactive map.
+- [x] **Write it up** ([notebook 02](notebooks/02_spatial_models.ipynb) and the findings below).
+- [x] **Build an interactive map** (`uv run dap health report`), with each area's rate, its expected rate and the
+  hot and cold spots.
+- [ ] **Publish the map** so it can be viewed without running anything.
 
 ## What I've found so far
 

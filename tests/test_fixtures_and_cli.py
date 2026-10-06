@@ -51,8 +51,8 @@ def test_cli_fetch_on_fixtures(fixtures_dir, tmp_path, capsys):
 
 
 def test_cli_reports_unbuilt_commands(capsys):
-    assert main(["health", "report"]) == 2
-    assert "Phase 4" in capsys.readouterr().out
+    assert main(["sentiment", "train"]) == 2
+    assert "Phase 5" in capsys.readouterr().out
 
 
 def test_cli_train_without_data_says_what_to_run(tmp_path, monkeypatch, capsys):

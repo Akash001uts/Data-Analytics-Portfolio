@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preventable admissions map</title>
+<meta name="description" content="Potentially preventable hospitalisations by SA3 across Australia, and how far each area sits above or below what its social, demographic and access profile predicts.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root {
+    --surface: $surface;
+    --text: $text;
+    --text-secondary: $text_secondary;
+    --grid: $grid;
+    --accent: $accent;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+  p, li { max-width: 72ch; }
+  .lede { color: var(--text-secondary); margin: 0 0 20px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; margin-bottom: 12px; }
+  .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .group span { font-size: 0.85rem; color: var(--text-secondary); margin-right: 2px; }
+  button {
+    font: inherit; font-size: 0.85rem; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--grid); background: #fff; color: var(--text);
+  }
+  button[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: #fff; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #map {
+    height: clamp(320px, min(72vh, 95vw), 680px); border: 1px solid var(--grid); border-radius: 8px;
+    background: var(--surface);
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 0.85rem; }
+  .legend li { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; flex: none; border: 1px solid rgba(0,0,0,0.08); }
+  .legend-title { font-size: 0.85rem; color: var(--text-secondary); margin: 12px 0 0; }
+  .leaflet-tooltip { font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .tip-name { font-weight: 600; }
+  .tip-row { color: var(--text-secondary); }
+  .tip-row b { color: var(--text); font-weight: 600; }
+  footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--grid); font-size: 0.85rem; color: var(--text-secondary); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Preventable hospital admissions: higher or lower than expected?</h1>
+  <p class="lede">
+    Each area is an SA3 (an ABS region of roughly 30,000 to 130,000 people). The default view compares each area's
+    potentially preventable hospitalisation rate in $year with the rate a model expected from the area's social,
+    demographic and access profile. Hover over or tap an area for its numbers.
+  </p>
+
+  <div class="controls">
+    <div class="group" role="group" aria-label="What to show">
+      <span>Show</span>
+      <button type="button" data-layer="residual" aria-pressed="true">Compared with expected</button>
+      <button type="button" data-layer="observed" aria-pressed="false">Admission rate</button>
+      <button type="button" data-layer="lisa" aria-pressed="false">Hot and cold spots</button>
+    </div>
+    <div class="group" role="group" aria-label="Zoom to">
+      <span>Zoom to</span>
+      $view_buttons
+    </div>
+  </div>
+
+  <div id="map" role="img" aria-label="Map of Australian SA3 areas coloured by the selected measure"></div>
+  <p class="legend-title" id="legend-title"></p>
+  <ul class="legend" id="legend"></ul>
+
+  <h2>How to read this</h2>
+  <ul>
+    <li>
+      <strong>Expected</strong> comes from a $model model trained on $features input features (disadvantage,
+      income support, housing, age, birthplace, remoteness, distance to hospital, GP use and screening). Each
+      area's expected rate was predicted while the area's whole SA4 region was held out of training, so the model
+      never saw that area or its closest neighbours.
+    </li>
+    <li>
+      $within_10 of people live in an SA3 within 10% of its expected rate. $above_20 SA3s are more than 20% above
+      expected and $below_20 are more than 20% below.
+    </li>
+    <li>
+      <strong>Remote areas:</strong> tree models can't predict above the highest rates they were trained on, so
+      some very remote areas look further above expected than they really are.
+    </li>
+    <li>
+      <strong>Grey areas</strong> have no published rate. The AIHW suppresses rates for areas with very small
+      numbers, and a few of those (Barkly, East Arnhem, West Pilbara) are remote areas that probably have some of the
+      highest rates in the country.
+    </li>
+    <li>
+      <strong>Hot and cold spots</strong> are local Moran's I clusters at p &lt; 0.05, not adjusted for testing
+      hundreds of areas at once, so they show where to look rather than confirmed clusters.
+    </li>
+    <li>
+      This is area-level data. It describes places, not people, and "higher than expected" doesn't mean anyone
+      there got worse care.
+    </li>
+  </ul>
+  <p>
+    The full method, results and limitations are in the
+    <a href="https://github.com/Akash001uts/Data-Analytics-Portfolio/tree/$branch/projects/avoidable-hospitalisations">project write-up</a>.
+  </p>
+
+  <footer>
+    <p>
+      Data: AIHW potentially preventable hospitalisations by SA3 ($year), AIHW Medicare GP data and MyHospitals,
+      PHIDU Social Health Atlas of Australia (Torrens University Australia), and ABS boundaries, remoteness areas and
+      SEIFA. Because it uses PHIDU data, this map is shared under
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
+      Built by Akash Bhatnagar.
+    </p>
+  </footer>
+</main>
+
+<script id="map-data" type="application/json">$data</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById("map-data").textContent);
+  var current = "residual";
+
+  var map = L.map("map", { zoomSnap: 0.25, minZoom: 3, maxZoom: 12 });
+  map.attributionControl.setPrefix(false);
+  map.attributionControl.addAttribution("AIHW, PHIDU, ABS");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function num(x) { return Math.round(x).toLocaleString("en-AU"); }
+  function pct(x) { return (x > 0 ? "+" : "") + Math.round(x) + "%"; }
+
+  function tooltip(p) {
+    var rows = ['<div class="tip-name">' + esc(p.name) + "</div>",
+                '<div class="tip-row">' + esc(p.state) + "</div>"];
+    if (p.observed === null) {
+      rows.push('<div class="tip-row">No published rate</div>');
+    } else {
+      rows.push('<div class="tip-row">Rate: <b>' + num(p.observed) + "</b> per 100,000</div>");
+      rows.push('<div class="tip-row">Expected: <b>' + num(p.expected) + "</b></div>");
+      rows.push('<div class="tip-row">Compared with expected: <b>' + pct(p.pct) + "</b></div>");
+      rows.push('<div class="tip-row">' + esc(p.cluster) + "</div>");
+    }
+    return rows.join("");
+  }
+
+  function style(f) {
+    return { fillColor: f.properties.colour[current], fillOpacity: 1, color: "#ffffff", weight: 0.6 };
+  }
+
+  var areas = L.geoJSON(data.areas, {
+    style: style,
+    onEachFeature: function (f, lyr) {
+      lyr.bindTooltip(tooltip(f.properties), { sticky: true });
+      lyr.on("mouseover", function () { lyr.setStyle({ color: data.highlight, weight: 2 }); lyr.bringToFront(); });
+      lyr.on("mouseout", function () { areas.resetStyle(lyr); });
+    }
+  }).addTo(map);
+
+  function drawLegend() {
+    var legend = data.legends[current];
+    document.getElementById("legend-title").textContent = legend.title;
+    var ul = document.getElementById("legend");
+    ul.innerHTML = "";
+    legend.items.forEach(function (item) {
+      var li = document.createElement("li");
+      var sw = document.createElement("span");
+      sw.className = "swatch";
+      sw.style.background = item.colour;
+      li.appendChild(sw);
+      li.appendChild(document.createTextNode(item.label));
+      ul.appendChild(li);
+    });
+  }
+
+  function press(selector, btn) {
+    document.querySelectorAll(selector).forEach(function (b) {
+      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+    });
+  }
+
+  document.querySelectorAll("button[data-layer]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      current = btn.getAttribute("data-layer");
+      press("button[data-layer]", btn);
+      areas.setStyle(style);
+      drawLegend();
+    });
+  });
+  document.querySelectorAll("button[data-view]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      map.fitBounds(data.views[btn.getAttribute("data-view")]);
+      press("button[data-view]", btn);
+    });
+  });
+
+  map.fitBounds(data.views[data.default_view]);
+  drawLegend();
+})();
+</script>
+</body>
+</html>
