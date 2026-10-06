@@ -5,7 +5,7 @@ with the PPH target, so features are an explicit allowlist and `validate_allowli
 from those sheets, anything from the target source, and any count or significance column.
 
 PHIDU features are identified by (sheet, block title, measure label) exactly as they appear in
-the September 2026 workbook, after collapsing whitespace. docs/data.md explains each tier.
+the September 2026 workbook, after collapsing whitespace. The project data.md explains each tier.
 """
 
 import re
@@ -265,7 +265,7 @@ TIER_A: tuple[Feature, ...] = (
         "Private health insurance",
         "% people with private health insurance",
         "2023-24",
-        note="reported with and without, see docs/data.md",
+        note="reported with and without, see the project data.md",
     ),
     _p(
         "aged_care_places_per_1000",

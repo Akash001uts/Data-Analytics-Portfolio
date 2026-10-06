@@ -1,7 +1,8 @@
-# Data: sources, geography and features
+# The data behind this project
 
-This page records what data the health project uses, why, and what I checked before building anything.
-Every file is listed with its URL, size and SHA256 in [`data/manifest.yaml`](../data/manifest.yaml).
+This is the detailed version of the data side of the project: every source I use, why I picked it, and every check I
+ran before building anything. If you just want the overview, start with the [project README](README.md).
+Every file is listed with its URL, size and SHA256 in [`data/manifest.yaml`](../../data/manifest.yaml).
 No raw data is committed; `dap health fetch` downloads and verifies it.
 
 The checks below were first run on 6 October 2026. PHIDU published a September 2026 release the same
