@@ -24,6 +24,3 @@ data/processed/
 .idea/
 .DS_Store
 Thumbs.db
-
-# The interactive map embeds per-area values; kept out of git until we decide how to publish it
-reports/map/
