@@ -69,8 +69,11 @@ def render(r: dict) -> str:
         f"(permutation p = {a['moran_log_pph']['p_sim']}). LISA finds "
         f"{a['lisa_clusters']['High-high']} hot-spot and {a['lisa_clusters']['Low-low']} "
         "cold-spot SA3s.",
-        f"- Spatial lag model: fitted on every area, pseudo R² {lag['pseudo_r2']:.2f} and residual "
-        f"Moran's I {lag['residual_moran_I']:.2f}. With whole SA4s held out, R² on the log scale "
+        "- Spatial lag model, R² on the log scale. Fitted on every area: "
+        f"{lag['r2_log_in_sample_with_neighbour_rates']:.2f} using the neighbours' observed rates "
+        f"(residual Moran's I {lag['residual_moran_I']:.2f}), "
+        f"{lag['r2_log_in_sample_features_only']:.2f} from features alone. With whole SA4s held "
+        "out: "
         f"{r['models']['spatial_lag']['spatial']['r2_log']['mean']:.2f} and residual Moran's I "
         f"{r['models']['spatial_lag']['residual_moran_I']:.2f}.",
         f"- Residual map model: {r['models'][res['model']]['label']}. "

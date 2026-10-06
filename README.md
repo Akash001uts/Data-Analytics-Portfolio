@@ -29,8 +29,8 @@ I keep a running log in [LEARNINGS.md](LEARNINGS.md). The short version:
   only found when I made a test count the rows.
 - **Neighbours give the answer away.** Areas next to each other have very similar rates, so a random train/test
   split made every model look better than it is. Holding out whole regions at a time gave more honest scores, and
-  showed that the model that looked best when fitted on everything (a spatial lag model) mostly relied on knowing
-  its neighbours' rates.
+  showed that a spatial lag model, which looked great when fitted on everything, mostly relied on knowing its
+  neighbours' rates.
 
 ## How the repo is laid out
 

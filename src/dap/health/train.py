@@ -17,7 +17,7 @@ from dap.common.io import write_json
 from dap.common.seeds import SEED, set_seed
 from dap.health import readme, spatial
 from dap.health.build import TABLE_NAME
-from dap.health.evaluate import N_REPEATS, N_SPLITS, SCHEMES, run_cv, summarise
+from dap.health.evaluate import N_REPEATS, N_SPLITS, SCHEMES, run_cv, score, summarise
 from dap.health.features import feature_names
 from dap.health.models import (
     LAG_FEATURES,
@@ -174,7 +174,13 @@ def explain(data: ModelData) -> dict:
             "features": list(LAG_FEATURES),
             "rho": lag.rho_,
             "standardised_coefficients": dict(zip(LAG_FEATURES, lag.coef_.tolist(), strict=True)),
-            "pseudo_r2": float(lag.model_.pr2),
+            # Scored like the CV (population-weighted R2 on the log scale). spreg's own prediction
+            # adds rho x the neighbours' observed rates; the reduced form uses features only, as
+            # the cross-validated predictions do.
+            "r2_log_in_sample_with_neighbour_rates": score(data, lag.model_.predy.ravel())[
+                "r2_log"
+            ],
+            "r2_log_in_sample_features_only": score(data, lag.predict(data, all_rows))["r2_log"],
             "residual_moran_I": spatial.global_moran(lag_resid, data.w)["I"],
         },
         "shap_mean_abs_log": mean_abs.head(15).to_dict(),
