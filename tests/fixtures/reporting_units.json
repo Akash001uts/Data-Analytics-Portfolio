@@ -1,0 +1,59 @@
+{
+ "result": [
+  {
+   "reporting_unit_code": "H9001",
+   "reporting_unit_name": "Synthetic H9001",
+   "reporting_unit_type": {
+    "reporting_unit_type_code": "H"
+   },
+   "closed": false,
+   "private": false,
+   "latitude": -34.05,
+   "longitude": 150.05
+  },
+  {
+   "reporting_unit_code": "H9002",
+   "reporting_unit_name": "Synthetic H9002",
+   "reporting_unit_type": {
+    "reporting_unit_type_code": "H"
+   },
+   "closed": false,
+   "private": true,
+   "latitude": -34.05,
+   "longitude": 150.05
+  },
+  {
+   "reporting_unit_code": "H9003",
+   "reporting_unit_name": "Synthetic H9003",
+   "reporting_unit_type": {
+    "reporting_unit_type_code": "H"
+   },
+   "closed": true,
+   "private": false,
+   "latitude": -34.05,
+   "longitude": 150.05
+  },
+  {
+   "reporting_unit_code": "H9004",
+   "reporting_unit_name": "Synthetic H9004",
+   "reporting_unit_type": {
+    "reporting_unit_type_code": "H"
+   },
+   "closed": false,
+   "private": false,
+   "latitude": null,
+   "longitude": null
+  },
+  {
+   "reporting_unit_code": "LHN901",
+   "reporting_unit_name": "Synthetic LHN901",
+   "reporting_unit_type": {
+    "reporting_unit_type_code": "LHN"
+   },
+   "closed": false,
+   "private": false,
+   "latitude": -34.05,
+   "longitude": 150.05
+  }
+ ]
+}
