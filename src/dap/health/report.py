@@ -33,7 +33,7 @@ SIMPLIFY_CITY_M = 100
 SIMPLIFY_REGIONAL_M = 800
 MIN_PART_KM2 = 2  # islands smaller than this are dropped (an area's largest part is always kept)
 DECIMALS = 4  # about 10 m at Australian latitudes
-BRANCH = "rebuild"  # switch to main at merge, with the README links
+BRANCH = "main"
 VIEWS = {
     "Australia": None,
     "Sydney": "1GSYD",
