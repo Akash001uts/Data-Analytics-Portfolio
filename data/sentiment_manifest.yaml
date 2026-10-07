@@ -17,7 +17,8 @@ sources:
     sha256: 03bbbe147814be08a945501ef867795a8ad535385341e71f0d56a0c7d9daf1b4
     last_modified: 2013-03-05T04:48:29Z
     # SNAP doesn't state a licence for this dataset. A Kaggle mirror labels it CC0, which I haven't been
-    # able to confirm, so I don't rely on it. No review text is committed to this repo.
+    # able to confirm, so I don't rely on it. No review text is committed, apart from a few short excerpts
+    # in the sentiment notebook.
     licence: none stated by SNAP; cite McAuley and Leskovec (2013)
     citation: >-
       J. McAuley and J. Leskovec. From amateurs to connoisseurs: modeling the evolution of user expertise

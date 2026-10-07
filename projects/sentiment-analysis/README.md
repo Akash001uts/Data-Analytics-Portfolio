@@ -17,7 +17,8 @@ reviews, and where do they all go wrong?
 ## How I did it
 
 - **Data:** the full Amazon Fine Food Reviews dataset from SNAP (568,454 reviews), downloaded by `dap sentiment fetch`
-  and checked against a SHA256 hash. No review text is committed to this repo.
+  and checked against a SHA256 hash. No review text is committed to this repo, apart from a few short excerpts in
+  the notebook.
 - **Labels:** 1 to 2 stars negative, 3 neutral, 4 to 5 positive. I use the review text only, not the summary line,
   because the summary is often a verdict in itself ("Good Quality Dog Food").
 - **Duplicates removed before splitting.** The same review shows up under every variant of a product, so I removed
@@ -66,15 +67,17 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 
 - **My original claim holds up, once it's measured.** RoBERTa beats VADER, with or without tuning VADER's
   thresholds, and the interval for the difference sits well clear of zero.
-- **But a simple model trained on the right text beats it.** TF-IDF with logistic regression, trained on food
-  reviews, beats the Twitter-trained RoBERTa used as is. The training data mattered more than the model.
+- **But a simple model trained on these reviews beats it.** TF-IDF with logistic regression, trained on food
+  reviews, beats the Twitter-trained RoBERTa used as is. That's a model trained on the right text against a bigger
+  model trained on different text, so I can't yet say how much is the data and how much the model.
 - **Accuracy would have told the wrong story.** Nearly four in five reviews are positive, so tuning VADER's
   thresholds lowers its accuracy while raising its macro-F1, because it starts finding some neutral reviews.
-- **VADER's default thresholds call most negative reviews positive.** It adds up word scores, so "a good chunk of
-  cash for nothing" counts as positive.
+- **VADER's default thresholds call most negative reviews positive.** It adds up word scores, so "good" in "a good
+  chunk of cash for nothing" and "like" in "tastes like it's way past its expiration date" push a one-star review
+  towards positive.
 - **Neutral is the hard class, and partly a label problem.** Three-star reviews are mostly mild complaints or mixed
   feelings, while the Twitter model's "neutral" means "no sentiment". Some one-star reviews praise the food and
-  complain about the price, and at least one is clearly a five-star review with the wrong rating.
+  complain about the price, and at least one reads like a five-star review with the wrong rating.
 - **RoBERTa gets worse as reviews get longer; TF-IDF doesn't.** Very few reviews hit RoBERTa's 512-token limit, so
   truncation isn't the main reason.
 - **I checked whether TF-IDF was cheating** by reading ratings written in the text ("three stars"). Those phrases
@@ -84,8 +87,9 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 ## Limitations
 
 - The labels come from star ratings, which mix sentiment with price, delivery and the odd mistake.
-- RoBERTa is used zero-shot. Fine-tuning it on the training reviews is the obvious next step, and would show
-  whether the gap is about the model or the data.
+- RoBERTa is used zero-shot, and unlike VADER's thresholds, its decision rule wasn't tuned on validation. Most of
+  its gap is on the neutral class, which tuning might move. Fine-tuning it on the training reviews is the obvious
+  next step, and would show whether the gap is about the model or the data.
 - One dataset and one kind of text: Amazon food reviews from 1999 to 2012.
 
 ## Run it
