@@ -37,3 +37,7 @@ def reports_dir() -> Path:
 
 def manifest_path() -> Path:
     return data_dir() / "manifest.yaml"
+
+
+def sentiment_manifest_path() -> Path:
+    return data_dir() / "sentiment_manifest.yaml"

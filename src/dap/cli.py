@@ -8,12 +8,6 @@ from pathlib import Path
 from dap.common import paths
 from dap.common.manifest import ManifestMismatch, load_manifest
 
-NOT_YET = {
-    ("sentiment", "fetch"): "Phase 5",
-    ("sentiment", "train"): "Phase 5",
-    ("sentiment", "report"): "Phase 5",
-}
-
 
 def _health_fetch(args: argparse.Namespace) -> int:
     from dap.health.fetch import fetch_all
@@ -76,10 +70,50 @@ def _health_report(args: argparse.Namespace) -> int:
     return 0
 
 
-def _not_yet(project: str, command: str) -> int:
-    phase = NOT_YET[project, command]
-    print(f"`dap {project} {command}` is not implemented yet (planned for {phase}).")
-    return 2
+def _sentiment_fetch(args: argparse.Namespace) -> int:
+    from dap.health.fetch import fetch_all
+
+    manifest = load_manifest(paths.sentiment_manifest_path())
+    try:
+        done = fetch_all(manifest, paths.raw_dir(), force=args.force)
+    except ManifestMismatch as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    for sid, path in done.items():
+        print(f"ok  {sid:32} {path}")
+    return 0
+
+
+def _sentiment_transformer(args: argparse.Namespace) -> int:
+    from dap.sentiment.data import load_reviews
+    from dap.sentiment.transformer import predict
+
+    try:
+        reviews, _ = load_reviews()
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    out = predict(reviews[reviews.in_eval][["review_id", "text"]], limit=args.limit)
+    print(f"wrote {out}")
+    return 0
+
+
+def _sentiment_train(args: argparse.Namespace) -> int:
+    from dap.sentiment.train import train
+
+    try:
+        out = train()
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    print(f"wrote {out['results']}")
+    for f in out["figures"]:
+        print(f"wrote {f}")
+    for m in out["stats"]["models"].values():
+        f1 = m["macro_f1"]
+        ci = f"{f1['ci_low']:.3f} to {f1['ci_high']:.3f}"
+        print(f"{m['label']:34} macro-F1 {f1['estimate']:.3f} ({ci})")
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -105,9 +139,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     sentiment = projects.add_parser("sentiment", help="sentiment evaluation project")
     scmd = sentiment.add_subparsers(dest="command", required=True)
-    for name in ("fetch", "train", "report"):
-        p = scmd.add_parser(name, help=f"not implemented yet ({NOT_YET['sentiment', name]})")
-        p.set_defaults(func=lambda _a, n=name: _not_yet("sentiment", n))
+    sfetch = scmd.add_parser(
+        "fetch", help="download the reviews and check them against the manifest"
+    )
+    sfetch.add_argument("--force", action="store_true", help="download again even if verified")
+    sfetch.set_defaults(func=_sentiment_fetch)
+    trans = scmd.add_parser(
+        "transformer", help="run RoBERTa on the evaluation sample and cache it (needs --group nlp)"
+    )
+    trans.add_argument("--limit", type=int, help="only score this many more reviews")
+    trans.set_defaults(func=_sentiment_transformer)
+    strain = scmd.add_parser("train", help="fit the baselines, evaluate everything, write results")
+    strain.set_defaults(func=_sentiment_train)
     return parser
 
 

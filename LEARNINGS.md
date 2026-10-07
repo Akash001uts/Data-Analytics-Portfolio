@@ -135,3 +135,25 @@ This turned out to be the most important decision so far.
   looked fine, but that area was missing from the legend count.
 - **Share the settings between the static and interactive maps.** The page imports its colour classes from the
   same module as the PNG figures, so the two can't quietly disagree.
+
+## Redoing the sentiment project (7 Oct 2026)
+
+- **Almost a third of the dataset was repeats.** Amazon shows a review on every variant of a product, so the same
+  text appears many times. I removed duplicates before splitting, and split by reviewer, so no review and no
+  reviewer is on both sides. My first version just took the first 500 rows, repeats and all.
+- **My old claim was right, but I hadn't earned it.** Measured properly, RoBERTa does beat VADER. But a TF-IDF model
+  with logistic regression, trained on these reviews, beats RoBERTa, which was trained on tweets. The paired
+  bootstrap gives an interval for each difference, which is the thing I should have reported the first time.
+- **Accuracy can go down when a model gets better.** Tuning VADER's thresholds lowered its accuracy and raised its
+  macro-F1, because with nearly four in five reviews positive, saying "positive" a lot is an easy way to be
+  "accurate".
+- **Pin the model, then check you actually got it.** I pinned the RoBERTa model to one commit. The logs showed
+  transformers fetching files from an open pull request on the model's page, so I read the library source. It
+  loads the pinned weights, and the pull request download is a background "convert it for next time" step, which I
+  switched off. I also checked the load report: no weights were missing, so the classifier wasn't randomly
+  initialised.
+- **A test that can't fail isn't a test.** My check for reviews that mention "stars" matched nothing, because a
+  `\b` in my regex got turned into a backspace character on its way through the shell. The slice test still
+  passed, because none of its example texts mentioned stars. I fixed the regex and added a test text that does.
+- **Read the mistakes.** Some one-star reviews praise the food and complain about the price, and one is plainly a
+  five-star review with the wrong rating. No model can get those right, so a perfect score isn't possible.

@@ -5,7 +5,6 @@ Per-area predictions and residuals go to `data/processed/` (gitignored), for the
 """
 
 import logging
-import math
 from pathlib import Path
 
 import geopandas as gpd
@@ -13,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from dap.common import paths
-from dap.common.io import write_json
+from dap.common.io import sig, write_json
 from dap.common.seeds import SEED, set_seed
 from dap.health import readme, spatial
 from dap.health.build import TABLE_NAME
@@ -62,22 +61,6 @@ def model_data(
         tiers=tiers,
         names=rows.sa3_name,
     )
-
-
-def sig(x, digits: int = 4):
-    """Round floats to a few significant figures so results.json diffs stay quiet."""
-    if isinstance(x, dict):
-        return {k: sig(v, digits) for k, v in x.items()}
-    if isinstance(x, list | tuple):
-        return [sig(v, digits) for v in x]
-    if isinstance(x, float | np.floating):
-        x = float(x)
-        if x == 0 or not math.isfinite(x):
-            return x
-        return round(x, digits - 1 - math.floor(math.log10(abs(x))))
-    if isinstance(x, np.integer):
-        return int(x)
-    return x
 
 
 def autocorrelation(data: ModelData) -> tuple[dict, pd.DataFrame]:
