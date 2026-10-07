@@ -12,7 +12,7 @@ tag if you want to see where I started.
 | Project | The question | Status |
 | --- | --- | --- |
 | [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Models, residual map and interactive map done |
-| [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Planned |
+| [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Done: a simple model trained on reviews beat the transformer |
 
 ## What I've learnt so far
 
@@ -31,16 +31,20 @@ I keep a running log in [LEARNINGS.md](LEARNINGS.md). The short version:
   split made every model look better than it is. Holding out whole regions at a time gave more honest scores, and
   showed that a spatial lag model, which looked great when fitted on everything, mostly relied on knowing its
   neighbours' rates.
+- **Measure the claim you're making.** My first sentiment project said a transformer was "clearly" better than
+  VADER without a single score. Measured properly, it is better than VADER, but a plain TF-IDF model trained on
+  the reviews beats them both.
 
 ## How the repo is laid out
 
 ```
 projects/
   avoidable-hospitalisations/   the question, approach, findings so far, and data.md (every source and check)
-  sentiment-analysis/           the plan for the rebuilt sentiment project
+  sentiment-analysis/           the rebuilt sentiment evaluation, with its notebook
 src/dap/                        the shared Python code, so tests and notebooks can import it
   common/                       file paths, seeds, and the data manifest checker
   health/                       downloading, cleaning, the feature allowlist, spatial stats, models and CV
+  sentiment/                    parsing and deduping the reviews, VADER, TF-IDF, the RoBERTa cache, evaluation
 tests/                          pytest tests, plus tiny made-up data in tests/fixtures
 data/manifest.yaml              where every data file comes from, with its size and SHA256 (the data itself isn't in git)
 LEARNINGS.md                    what I've learnt and got wrong along the way
@@ -139,6 +143,18 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    This writes `reports/map/index.html`, a single page you can open in any browser. It shows each area compared
    with its expected rate, the admission rate itself, and the hot and cold spots, with a zoom button for each
    capital city.
+
+9. **The sentiment project.**
+
+   ```
+   uv run dap sentiment fetch
+   uv run dap sentiment train
+   ```
+
+   The first downloads about 120 MB of reviews from SNAP. The second removes duplicates, splits by reviewer, fits
+   VADER and TF-IDF, and scores every model on the same 10,000 reviews (about 5 minutes). RoBERTa's predictions
+   come from a committed cache, so you don't need PyTorch. To re-run RoBERTa itself: `uv sync --group nlp`, then
+   `uv run dap sentiment transformer` (about 25 minutes on a laptop CPU).
 
 ### If something goes wrong
 

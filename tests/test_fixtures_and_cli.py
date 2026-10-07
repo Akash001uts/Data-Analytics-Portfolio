@@ -50,11 +50,6 @@ def test_cli_fetch_on_fixtures(fixtures_dir, tmp_path, capsys):
     assert "ok  fixture_target" in capsys.readouterr().out
 
 
-def test_cli_reports_unbuilt_commands(capsys):
-    assert main(["sentiment", "train"]) == 2
-    assert "Phase 5" in capsys.readouterr().out
-
-
 def test_cli_train_without_data_says_what_to_run(tmp_path, monkeypatch, capsys):
     (tmp_path / "pyproject.toml").write_text("")
     monkeypatch.setenv("DAP_ROOT", str(tmp_path))

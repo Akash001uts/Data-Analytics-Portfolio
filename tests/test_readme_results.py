@@ -23,3 +23,12 @@ def test_update_replaces_only_the_block(tmp_path):
     assert text.startswith("before\n\n") and text.endswith("\n\nafter\n")
     assert "old numbers" not in text
     assert not readme.update(results, page)  # a second run changes nothing
+
+
+def test_sentiment_readme_block_matches_results_json():
+    from dap.sentiment import readme as sreadme
+
+    results = read_json(paths.reports_dir() / "sentiment" / "results.json")
+    assert sreadme.current_block() == sreadme.render(results), (
+        "sentiment README results are stale: run `uv run dap sentiment train`"
+    )
