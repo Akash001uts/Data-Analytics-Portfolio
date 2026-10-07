@@ -1,0 +1,13 @@
+{
+  "label_order_in_model": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "licence": "CC BY 4.0",
+  "max_length": 512,
+  "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+  "revision": "3216a57f2a0d9c45a2e6c20157c20c49fb4bf9c7",
+  "torch": "2.14.1+cpu",
+  "transformers": "5.19.0"
+}

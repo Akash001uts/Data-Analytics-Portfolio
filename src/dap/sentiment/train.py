@@ -1,6 +1,6 @@
 """`dap sentiment train`: fit the baselines, score every model on one sample, write results.
 
-RoBERTa's predictions come from the committed cache (`dap sentiment transformer` makes it), so
+RoBERTa's predictions come from the committed caches (`dap sentiment transformer` makes them), so
 this step needs no torch. Everything the README quotes comes from `reports/sentiment/results.json`.
 """
 
@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.metrics import f1_score
 
 from dap.common import paths
 from dap.common.io import sig, write_json
@@ -18,7 +19,7 @@ from dap.sentiment import evaluate as E
 from dap.sentiment import models as M
 from dap.sentiment.clean import LABELS
 from dap.sentiment.data import load_reviews
-from dap.sentiment.transformer import cache_path, read_cache
+from dap.sentiment.transformer import cache_path, read_cache, tuning_sample, validation_cache_path
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ LABELS_FOR = {
     "vader_tuned": "VADER, thresholds tuned on validation",
     "tfidf_logistic": "TF-IDF + logistic regression",
     "roberta": "RoBERTa (Twitter sentiment, zero-shot)",
+    "roberta_tuned": "RoBERTa, decision rule tuned on validation",
 }
 VADER_TUNING_SIZE = 20_000  # validation reviews used to pick VADER's thresholds
 
@@ -39,15 +41,31 @@ def reports_dir() -> Path:
     return paths.reports_dir() / "sentiment"
 
 
-def with_roberta(ev: pd.DataFrame) -> pd.DataFrame:
-    rob = read_cache()
+def with_roberta(ev: pd.DataFrame, path: Path | None = None) -> pd.DataFrame:
+    path = Path(path or cache_path())
+    rob = read_cache(path)
     missing = set(ev.review_id) - set(rob.index)
     if missing:
+        split = " --split validation" if path == validation_cache_path() else ""
         raise FileNotFoundError(
-            f"{cache_path()} has no predictions for {len(missing)} evaluation reviews; "
-            "run `dap sentiment transformer`"
+            f"{path} has no predictions for {len(missing)} of the reviews it needs; "
+            f"run `dap sentiment transformer{split}`"
         )
     return ev.join(rob, on="review_id")
+
+
+def roberta_rule(df: pd.DataFrame, path: Path | None = None) -> tuple[dict[str, float], dict]:
+    """Tune RoBERTa's log-probability offsets on the scored validation sample (no test rows)."""
+    tune = with_roberta(tuning_sample(df), path or validation_cache_path())
+    log.info("RoBERTa: tuning the decision rule on %d validation reviews", len(tune))
+    offsets, tuned_f1 = M.tune_roberta(tune, tune.label.to_numpy())
+    argmax_f1 = f1_score(tune.label, M.roberta_labels(tune), average="macro", labels=LABELS)
+    return offsets, {
+        "roberta_tuned_log_offsets": offsets,
+        "roberta_tuning_reviews": len(tune),
+        "roberta_argmax_validation_macro_f1": float(argmax_f1),
+        "roberta_tuned_validation_macro_f1": tuned_f1,
+    }
 
 
 def predict_all(
@@ -62,6 +80,8 @@ def predict_all(
     thresholds, vader_val_f1 = M.tune_vader(M.vader_compound(tune.text), tune.label.to_numpy())
     compound = M.vader_compound(ev.text)
 
+    offsets, rule_settings = roberta_rule(df)
+
     log.info("TF-IDF: fitting on %d training reviews", len(train))
     tfidf = M.TfidfLogistic().fit(train.text, train.label, val.text, val.label)
 
@@ -70,6 +90,7 @@ def predict_all(
         "vader_tuned": M.vader_labels(compound, thresholds),
         "tfidf_logistic": tfidf.predict(ev.text),
         "roberta": M.roberta_labels(ev),
+        "roberta_tuned": M.roberta_labels(ev, offsets),
     }
     settings = {
         "vader_default_thresholds": list(M.VADER_DEFAULT),
@@ -80,7 +101,7 @@ def predict_all(
         "tfidf_vocabulary": len(tfidf.vectoriser.vocabulary_),
         "tfidf_validation_macro_f1": tfidf.validation_macro_f1_,
         "tfidf_search": tfidf.search_,
-    }
+    } | rule_settings
     ev = ev.assign(vader_compound=compound, **{f"pred_{m}": p for m, p in preds.items()})
     return ev, preds, settings, tfidf
 

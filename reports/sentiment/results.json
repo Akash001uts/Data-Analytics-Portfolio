@@ -22,15 +22,30 @@
     "validation_reviews": 40235
   },
   "differences": {
+    "roberta minus roberta_tuned": {
+      "ci_high": -0.01097,
+      "ci_low": -0.03172,
+      "estimate": -0.02138
+    },
     "tfidf_logistic minus roberta": {
       "ci_high": 0.116,
       "ci_low": 0.0846,
       "estimate": 0.101
     },
+    "tfidf_logistic minus roberta_tuned": {
+      "ci_high": 0.09522,
+      "ci_low": 0.06416,
+      "estimate": 0.07965
+    },
     "vader_default minus roberta": {
       "ci_high": -0.1115,
       "ci_low": -0.1421,
       "estimate": -0.1263
+    },
+    "vader_default minus roberta_tuned": {
+      "ci_high": -0.1329,
+      "ci_low": -0.1627,
+      "estimate": -0.1477
     },
     "vader_default minus tfidf_logistic": {
       "ci_high": -0.2111,
@@ -46,6 +61,11 @@
       "ci_high": -0.06927,
       "ci_low": -0.1016,
       "estimate": -0.08531
+    },
+    "vader_tuned minus roberta_tuned": {
+      "ci_high": -0.09101,
+      "ci_low": -0.1223,
+      "estimate": -0.1067
     },
     "vader_tuned minus tfidf_logistic": {
       "ci_high": -0.1707,
@@ -97,6 +117,52 @@
           "n": 7792,
           "precision": 0.9302,
           "recall": 0.8874
+        }
+      }
+    },
+    "roberta_tuned": {
+      "accuracy": 0.8174,
+      "confusion": [
+        [
+          892,
+          317,
+          238
+        ],
+        [
+          171,
+          250,
+          340
+        ],
+        [
+          133,
+          627,
+          7032
+        ]
+      ],
+      "label": "RoBERTa, decision rule tuned on validation",
+      "macro_f1": {
+        "ci_high": 0.6268,
+        "ci_low": 0.6027,
+        "estimate": 0.6146
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.675,
+          "n": 1447,
+          "precision": 0.7458,
+          "recall": 0.6164
+        },
+        "neutral": {
+          "f1": 0.2558,
+          "n": 761,
+          "precision": 0.2094,
+          "recall": 0.3285
+        },
+        "positive": {
+          "f1": 0.9131,
+          "n": 7792,
+          "precision": 0.924,
+          "recall": 0.9025
         }
       }
     },
@@ -254,6 +320,14 @@
       "torch": "2.14.1+cpu",
       "transformers": "5.19.0"
     },
+    "roberta_argmax_validation_macro_f1": 0.6018,
+    "roberta_tuned_log_offsets": {
+      "negative": -1.0,
+      "neutral": -0.2,
+      "positive": 0.0
+    },
+    "roberta_tuned_validation_macro_f1": 0.6245,
+    "roberta_tuning_reviews": 5000,
     "seed": 20261006,
     "tfidf_params": {
       "C": 2.0,
@@ -309,6 +383,7 @@
       "has a contrast word": {
         "n": 4910,
         "roberta": 0.5582,
+        "roberta_tuned": 0.5804,
         "tfidf_logistic": 0.6734,
         "vader_default": 0.4398,
         "vader_tuned": 0.5031
@@ -316,6 +391,7 @@
       "none": {
         "n": 5090,
         "roberta": 0.6292,
+        "roberta_tuned": 0.6423,
         "tfidf_logistic": 0.6902,
         "vader_default": 0.5013,
         "vader_tuned": 0.5086
@@ -325,6 +401,7 @@
       "101 to 200": {
         "n": 1748,
         "roberta": 0.541,
+        "roberta_tuned": 0.5492,
         "tfidf_logistic": 0.7075,
         "vader_default": 0.4392,
         "vader_tuned": 0.498
@@ -332,6 +409,7 @@
       "51 to 100": {
         "n": 3198,
         "roberta": 0.5893,
+        "roberta_tuned": 0.622,
         "tfidf_logistic": 0.6962,
         "vader_default": 0.4507,
         "vader_tuned": 0.5183
@@ -339,6 +417,7 @@
       "over 200": {
         "n": 627,
         "roberta": 0.4549,
+        "roberta_tuned": 0.4338,
         "tfidf_logistic": 0.6588,
         "vader_default": 0.4237,
         "vader_tuned": 0.4238
@@ -346,6 +425,7 @@
       "up to 50 words": {
         "n": 4427,
         "roberta": 0.6365,
+        "roberta_tuned": 0.6598,
         "tfidf_logistic": 0.6859,
         "vader_default": 0.4961,
         "vader_tuned": 0.515
@@ -355,6 +435,7 @@
       "mentions stars": {
         "n": 409,
         "roberta": 0.5232,
+        "roberta_tuned": 0.5413,
         "tfidf_logistic": 0.6889,
         "vader_default": 0.4095,
         "vader_tuned": 0.4431
@@ -362,6 +443,7 @@
       "no mention": {
         "n": 9591,
         "roberta": 0.5955,
+        "roberta_tuned": 0.6157,
         "tfidf_logistic": 0.6903,
         "vader_default": 0.4696,
         "vader_tuned": 0.5108
@@ -371,6 +453,7 @@
       "fits in 512 tokens": {
         "n": 9919,
         "roberta": 0.5938,
+        "roberta_tuned": 0.6157,
         "tfidf_logistic": 0.6944,
         "vader_default": 0.4674,
         "vader_tuned": 0.5085
@@ -378,6 +461,7 @@
       "truncated": {
         "n": 81,
         "roberta": 0.4598,
+        "roberta_tuned": 0.4054,
         "tfidf_logistic": 0.6548,
         "vader_default": 0.3978,
         "vader_tuned": 0.3924

@@ -86,14 +86,18 @@ def _sentiment_fetch(args: argparse.Namespace) -> int:
 
 def _sentiment_transformer(args: argparse.Namespace) -> int:
     from dap.sentiment.data import load_reviews
-    from dap.sentiment.transformer import predict
+    from dap.sentiment.transformer import predict, tuning_sample, validation_cache_path
 
     try:
         reviews, _ = load_reviews()
     except FileNotFoundError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
-    out = predict(reviews[reviews.in_eval][["review_id", "text"]], limit=args.limit)
+    if args.split == "validation":
+        todo, out = tuning_sample(reviews), validation_cache_path()
+    else:
+        todo, out = reviews[reviews.in_eval], None
+    out = predict(todo[["review_id", "text"]], out=out, limit=args.limit)
     print(f"wrote {out}")
     return 0
 
@@ -148,6 +152,12 @@ def build_parser() -> argparse.ArgumentParser:
         "transformer", help="run RoBERTa on the evaluation sample and cache it (needs --group nlp)"
     )
     trans.add_argument("--limit", type=int, help="only score this many more reviews")
+    trans.add_argument(
+        "--split",
+        choices=["test", "validation"],
+        default="test",
+        help="the evaluation sample (default), or the validation sample used to tune the rule",
+    )
     trans.set_defaults(func=_sentiment_transformer)
     strain = scmd.add_parser("train", help="fit the baselines, evaluate everything, write results")
     strain.set_defaults(func=_sentiment_train)

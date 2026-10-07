@@ -18,7 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 from dap.common import paths
-from dap.sentiment.clean import LABELS
+from dap.sentiment.clean import LABELS, eval_sample
 
 log = logging.getLogger(__name__)
 
@@ -28,17 +28,29 @@ MODEL_LICENCE = "CC BY 4.0"
 MAX_LENGTH = 512
 BATCH = 16
 COLUMNS = ["review_id", "p_negative", "p_neutral", "p_positive", "n_tokens"]
+TUNING_SIZE = 5_000  # validation reviews scored for tuning RoBERTa's decision rule
 
 
 def cache_path() -> Path:
     return paths.reports_dir() / "sentiment" / "roberta_predictions.csv"
 
 
+def validation_cache_path() -> Path:
+    return paths.reports_dir() / "sentiment" / "roberta_validation_predictions.csv"
+
+
+def tuning_sample(df: pd.DataFrame, n: int = TUNING_SIZE) -> pd.DataFrame:
+    """A fixed, stratified sample of the validation reviewers' reviews, for tuning the rule."""
+    return eval_sample(df[df.split == "validation"], n=n)
+
+
 def read_cache(path: Path | None = None) -> pd.DataFrame:
     path = Path(path or cache_path())
     if not path.exists():
+        split = " --split validation" if path.name.startswith("roberta_validation") else ""
         raise FileNotFoundError(
-            f"{path} is missing; run `uv sync --group nlp` and `dap sentiment transformer` first"
+            f"{path} is missing; run `uv sync --group nlp` and "
+            f"`dap sentiment transformer{split}` first"
         )
     return pd.read_csv(path).set_index("review_id")
 

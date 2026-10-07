@@ -36,6 +36,10 @@ reviews, and where do they all go wrong?
   - the Twitter-trained RoBERTa sentiment model, used as is, with long reviews truncated to 512 tokens instead of
     dropped. Its predictions are cached in `reports/sentiment/roberta_predictions.csv` (review ids and probabilities
     only), so nothing else needs a GPU or even PyTorch.
+  - the same RoBERTa with its decision rule tuned on validation, to give it the same chance I gave VADER. Instead of
+    just taking the most likely class, I add an offset to the log probability of negative and neutral, and pick
+    the offsets with the best macro-F1 on 5,000 validation reviews (scored once and cached in
+    `reports/sentiment/roberta_validation_predictions.csv`).
 - **Evaluation:** macro-F1, so the small neutral class counts as much as the others, with paired bootstrap
   intervals. "Paired" means every model is scored on the same resampled reviews, so I can put an interval on the
   *difference* between two models, which is the thing my first version claimed without measuring.
@@ -52,12 +56,15 @@ reviews, and where do they all go wrong?
 | VADER, thresholds tuned on validation | 0.508 (0.496 to 0.520) | 0.750 | 0.24 | 0.41 |
 | TF-IDF + logistic regression | 0.694 (0.681 to 0.706) | 0.851 | 0.52 | 0.78 |
 | RoBERTa (Twitter sentiment, zero-shot) | 0.593 (0.582 to 0.605) | 0.815 | 0.20 | 0.75 |
+| RoBERTa, decision rule tuned on validation | 0.615 (0.603 to 0.627) | 0.817 | 0.33 | 0.62 |
 
 Differences in macro-F1 (same reviews, paired bootstrap):
 
 - RoBERTa (Twitter sentiment, zero-shot) minus VADER, default thresholds: 0.126 (0.112 to 0.142)
 - TF-IDF + logistic regression minus RoBERTa (Twitter sentiment, zero-shot): 0.101 (0.085 to 0.116)
 - VADER, thresholds tuned on validation minus VADER, default thresholds: 0.041 (0.029 to 0.053)
+- RoBERTa, decision rule tuned on validation minus RoBERTa (Twitter sentiment, zero-shot): 0.021 (0.011 to 0.032)
+- TF-IDF + logistic regression minus RoBERTa, decision rule tuned on validation: 0.080 (0.064 to 0.095)
 
 <!-- results:end -->
 
@@ -70,6 +77,10 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 - But a simple model trained on these reviews beats it. TF-IDF with logistic regression, trained on food
   reviews, beats the Twitter-trained RoBERTa used as is. That's a model trained on the right text against a bigger
   model trained on different text, so I can't yet say how much is the data and how much the model.
+- Tuning RoBERTa's decision rule helps, but only a little. I expected the tuned rule to push it towards neutral.
+  Instead it made RoBERTa slower to say negative: it was calling a lot of three-star reviews negative, and those
+  move to neutral. Neutral recall goes up and negative recall goes down, and the gain in macro-F1 is real (the
+  interval is above zero) but small. TF-IDF is still clearly ahead, so the gap isn't just a badly placed threshold.
 - Accuracy would have told the wrong story. Nearly four in five reviews are positive, so tuning VADER's
   thresholds lowers its accuracy while raising its macro-F1, because it starts finding some neutral reviews.
 - VADER's default thresholds call most negative reviews positive. It adds up word scores, so "good" in "a good
@@ -87,9 +98,11 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 ## Limitations
 
 - The labels come from star ratings, which mix sentiment with price, delivery and the odd mistake.
-- RoBERTa is used zero-shot, and unlike VADER's thresholds, its decision rule wasn't tuned on validation. Most of
-  its gap is on the neutral class, which tuning might move. Fine-tuning it on the training reviews is the obvious
-  next step, and would show whether the gap is about the model or the data.
+- RoBERTa is used zero-shot. Tuning its decision rule only moves where it draws the lines between classes, not
+  what it has learnt, and that closes a small part of the gap. Fine-tuning it on the training reviews is the
+  obvious next step, and would show whether the gap is about the model or the data.
+- The rule is tuned on 5,000 validation reviews, not all of them, because scoring them with RoBERTa on a laptop
+  CPU is slow.
 - One dataset and one kind of text: Amazon food reviews from 1999 to 2012.
 
 ## Run it
@@ -100,7 +113,8 @@ uv run dap sentiment train     # VADER, TF-IDF, and scoring everything (uses the
 ```
 
 To re-run RoBERTa itself (about 25 minutes on a laptop CPU): `uv sync --group nlp`, then
-`uv run dap sentiment transformer`.
+`uv run dap sentiment transformer`. Add `--split validation` to re-score the validation reviews the tuned rule
+is picked on.
 
 ## Credits and licence
 

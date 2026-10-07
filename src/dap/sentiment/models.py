@@ -1,7 +1,8 @@
 """The baselines: VADER (rule-based) and TF-IDF with logistic regression.
 
-Anything that gets tuned (VADER's thresholds, the regression's C and class weights) is tuned on the
-validation reviewers only. The evaluation sample is touched once, at the end.
+Anything that gets tuned (VADER's thresholds, the regression's C and class weights, RoBERTa's
+decision rule) is tuned on the validation reviewers only. The evaluation sample is touched once,
+at the end.
 """
 
 import numpy as np
@@ -14,6 +15,8 @@ from dap.sentiment.clean import LABELS
 
 VADER_DEFAULT = (-0.05, 0.05)  # the thresholds from the VADER paper, and what my first version used
 THRESHOLD_GRID = np.round(np.arange(-0.95, 0.96, 0.05), 2)
+# Offsets added to RoBERTa's log probabilities for negative and neutral (positive stays at 0)
+OFFSET_GRID = np.round(np.arange(-3.0, 3.01, 0.1), 1)
 TFIDF_GRID = [{"C": c, "class_weight": cw} for c in (0.5, 2.0, 8.0) for cw in (None, "balanced")]
 
 
@@ -84,6 +87,31 @@ class TfidfLogistic:
         return out
 
 
-def roberta_labels(probs: pd.DataFrame) -> np.ndarray:
+def roberta_labels(probs: pd.DataFrame, offsets: dict[str, float] | None = None) -> np.ndarray:
+    """The most likely class, after adding an offset to each class's log probability.
+
+    With no offsets this is plain argmax. An offset of +1 on neutral means "pick neutral even when
+    it is up to e (about 2.7) times less likely than the top class".
+    """
     cols = [f"p_{lab}" for lab in LABELS]
-    return np.array(LABELS)[probs[cols].to_numpy().argmax(axis=1)]
+    logp = np.log(np.clip(probs[cols].to_numpy(dtype=float), 1e-6, None))
+    if offsets:
+        logp = logp + np.array([offsets.get(lab, 0.0) for lab in LABELS])
+    return np.array(LABELS)[logp.argmax(axis=1)]
+
+
+def tune_roberta(probs: pd.DataFrame, y: np.ndarray) -> tuple[dict[str, float], float]:
+    """The negative and neutral offsets with the best macro-F1 on the data given (validation only).
+
+    Ties go to the smallest change from plain argmax, so a flat stretch of the grid can't drift.
+    """
+    best, best_key = None, None
+    for neg in OFFSET_GRID:
+        for neu in OFFSET_GRID:
+            offsets = {"negative": float(neg), "neutral": float(neu), "positive": 0.0}
+            pred = roberta_labels(probs, offsets)
+            f1 = f1_score(y, pred, average="macro", labels=LABELS, zero_division=0)
+            key = (round(f1, 10), -(abs(neg) + abs(neu)))
+            if best_key is None or key > best_key:
+                best, best_key = offsets, key
+    return best, float(best_key[0])
