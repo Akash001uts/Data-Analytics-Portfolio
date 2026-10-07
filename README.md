@@ -1,6 +1,6 @@
 # Data Analytics Portfolio
 
-[![CI](https://github.com/Akash001uts/Data-Analytics-Portfolio/actions/workflows/ci.yml/badge.svg?branch=rebuild)](https://github.com/Akash001uts/Data-Analytics-Portfolio/actions/workflows/ci.yml)
+[![CI](https://github.com/Akash001uts/Data-Analytics-Portfolio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Akash001uts/Data-Analytics-Portfolio/actions/workflows/ci.yml)
 
 I'm a uni student studying data analytics, and this is where I keep my data projects. The first version of this
 repo had three projects I made while I was learning: customer segmentation, sentiment analysis and an LSTM stock
@@ -17,7 +17,7 @@ tag if you want to see where I started.
 ## Quick start
 
 ```
-git clone --branch rebuild https://github.com/Akash001uts/Data-Analytics-Portfolio.git
+git clone https://github.com/Akash001uts/Data-Analytics-Portfolio.git
 cd Data-Analytics-Portfolio
 uv sync
 uv run pytest
@@ -27,7 +27,7 @@ You need [uv](https://docs.astral.sh/uv/), which installs Python and all the pac
 small made-up data, so they work straight away. To run the projects on the real data, see
 [Running it step by step](#running-it-step-by-step) below, or open the repo in a Codespace and skip the setup:
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Akash001uts/Data-Analytics-Portfolio?ref=rebuild)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Akash001uts/Data-Analytics-Portfolio)
 
 ## Avoidable hospital admissions
 
@@ -104,10 +104,10 @@ Everything here runs on a normal laptop, with no GPU and no accounts to sign up 
 
    (If you'd rather use pip, `pip install uv` works too. Just make sure the folder it installs into is on your PATH.)
 
-2. **Get the code.** Until I merge it, the new version lives on the `rebuild` branch:
+2. **Get the code.**
 
    ```
-   git clone --branch rebuild https://github.com/Akash001uts/Data-Analytics-Portfolio.git
+   git clone https://github.com/Akash001uts/Data-Analytics-Portfolio.git
    cd Data-Analytics-Portfolio
    uv sync
    ```
