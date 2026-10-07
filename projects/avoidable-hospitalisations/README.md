@@ -45,6 +45,8 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   ordinary random train/test split flatters the model. ([notebook 02](notebooks/02_spatial_models.ipynb))
 - **Built models from simple to complex:** a national average, then averages by state and remoteness, then ridge
   regression, a spatial lag model and LightGBM. Each one had to beat the simpler ones to be worth it.
+- **Added a state term** after the residuals turned out to lean by state. Each state gets its own intercept on top
+  of ridge or LightGBM, shrunk towards zero when the evidence is thin, and learnt only from the training areas.
 - **Tested them with spatial cross-validation.** Whole regions (SA4s) are held out together, and I compared that
   with a random split to show how much neighbouring areas inflate the score.
 - **Mapped the residuals**, the "better or worse than expected" map, which is the main result.
@@ -69,6 +71,8 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 | Ridge regression | 0.41 | 0.52 | 0.11 | 332 | 0.61 |
 | Spatial lag (ML) | 0.43 | 0.51 | 0.08 | 427 | 0.36 |
 | LightGBM | 0.55 | 0.68 | 0.13 | 338 | 0.58 |
+| Ridge + state intercept | 0.34 | 0.50 | 0.15 | 301 | 0.63 |
+| LightGBM + state intercept | 0.64 | 0.74 | 0.10 | 296 | 0.66 |
 
 - Global Moran's I of the log rate: **0.71** (permutation p = 0.001). LISA finds 51 hot-spot and 52 cold-spot SA3s.
 - Spatial lag model, R² on the log scale. Fitted on every area: 0.74 using the neighbours' observed rates (residual Moran's I 0.04), 0.41 from features alone. With whole SA4s held out: 0.36 and residual Moran's I 0.60.
@@ -76,6 +80,7 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 - Most above expected: Maryborough, Qld (+121%); Alice Springs, NT (+110%); Palmerston, NT (+76%); Hervey Bay, Qld (+72%); Kimberley, WA (+67%).
 - Most below expected: West Coast, Tas. (-36%); South East Coast, Tas. (-36%); Maryborough - Pyrenees, Vic. (-35%); Huon - Bruny Island, Tas. (-33%); Southern Highlands, NSW (-33%).
 - By state (population-weighted): Northern Territory +57%, Queensland +12%, Australian Capital Territory +11%, Victoria +2%, South Australia +1%, Western Australia -7%, New South Wales -8%, Tasmania -9%.
+- LightGBM + state intercept, with SA4s held out: R² 0.55 to 0.64, residual Moran's I 0.51 to 0.32. The state offsets it learns from every area: NT +43%, Qld +13%, ACT +6%, Vic. +2%, SA +0%, WA -6%, NSW -8%, Tas. -9%. What's left by state after it: NT +20%, ACT +11%, NSW +1%, WA +0%, Vic. +0%, Qld -1%, Tas. -1%, SA -2%. Most above expected after it: Maryborough (+98%); Kimberley (+79%); Alice Springs (+75%).
 
 <!-- results:end -->
 
@@ -97,10 +102,20 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   next door also near the top. It's been high in every year of the AIHW data, so it isn't a one-off.
 - Fairfield shows up, as I'd guessed it might, among the areas furthest below expected, along with several
   Tasmanian and regional areas.
-- The leftover errors lean by state, even though no model was told the state: Queensland and the ACT above
-  expected, New South Wales, Tasmania and Western Australia below. I can't tell yet whether that's about health
-  systems or about how hospitals record admissions. The residuals are still clustered too, so neighbouring areas
-  share something my features don't capture.
+- The leftover errors lean by state, even though the feature-only models were never told the state: the NT,
+  Queensland and the ACT above expected, New South Wales, Tasmania and Western Australia below. I can't tell yet
+  whether that's about health systems or about how hospitals record admissions. The residuals are still clustered
+  too, so neighbouring areas share something my features don't capture.
+- So I gave LightGBM a state intercept, and it became the best model by a clear margin, with less clustering left
+  in its residuals. The offsets it learns line up with the lean above. A state intercept is fair game here: you
+  always know which state an area is in, and the offsets only come from training areas. It doesn't fix everything,
+  though. The ACT is a single SA4, so whenever it's held out there's no ACT area to learn from and it keeps its old
+  lean. The NT only has two SA4s, so it learns from just one, and it's still well above expected. Maryborough is
+  still at the top of the list, so it isn't just a Queensland effect.
+- The same state term made ridge worse on the rate scale, even though it helped on the log scale and on MAE. The
+  NT offset is positive, so when ridge already over-predicts a held-out NT region, the offset pushes it even higher.
+- I kept plain LightGBM for the residual map, so the state lean is still visible on it. With the state intercept,
+  the map would only show differences within each state, which hides one of the more interesting findings.
 - Housing stress pushes predictions down, which surprised me. I don't think it protects anyone: it's highest
   in the big cities, where rates are lowest, so it's acting as a marker for "city".
 

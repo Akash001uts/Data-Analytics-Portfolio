@@ -16,9 +16,11 @@ from dap.health.models import (
     LAG_FEATURES,
     MODELS,
     LightGBM,
+    LightGBMState,
     ModelData,
     RemotenessStateMeans,
     Ridge,
+    RidgeState,
     ra_class,
 )
 from dap.health.spatial import global_moran
@@ -166,6 +168,41 @@ def test_remoteness_state_falls_back_when_a_cell_is_thin(data):
     model = RemotenessStateMeans(min_areas=10_000).fit(data, np.arange(len(data)))
     assert model.cell_ == {} and model.ra_ == {}
     np.testing.assert_allclose(model.predict(data, np.arange(3)), model.national_)
+
+
+def shifted(data: ModelData, shift: float) -> ModelData:
+    """The lattice with state "2" lifted by `shift` on the log scale."""
+    y = data.y + np.where(data.meta.state_code == "2", shift, 0.0)
+    return ModelData(X=data.X, y=y, weight=data.weight, meta=data.meta, w=data.w)
+
+
+def test_state_intercept_recovers_a_planted_state_shift(data):
+    d = shifted(data, 0.5)
+    model = RidgeState().fit(d, np.arange(len(d)))
+    gap = model.offset_["2"] - model.offset_["1"]
+    assert 0.2 < gap <= 0.5 + 1e-9  # shrunk towards zero, never past the truth
+    plain = E.run_cv(Ridge, d, "spatial", n_repeats=1).metrics.r2_log[0]
+    with_state = E.run_cv(RidgeState, d, "spatial", n_repeats=1).metrics.r2_log[0]
+    assert with_state > plain
+
+
+def test_state_intercept_is_zero_for_an_unseen_state(data):
+    """Like the ACT when its only SA4 is held out: no training areas, so no offset."""
+    d = shifted(data, 0.5)
+    train = np.flatnonzero(d.meta.state_code == "1")
+    test = np.flatnonzero(d.meta.state_code == "2")
+    model = LightGBMState().fit(d, train)
+    assert "2" not in model.offset_
+    np.testing.assert_allclose(model.predict(d, test), model.model_.predict(d, test))
+
+
+def test_state_intercept_inner_residuals_use_training_rows_only(data):
+    """Every inner residual must come from a model that never saw that row's target."""
+    train = np.arange(0, len(data), 2)
+    resid = RidgeState()._inner_residuals(data, train)
+    assert not np.isnan(resid).any()
+    in_sample = data.y.to_numpy()[train] - Ridge().fit(data, train).predict(data, train)
+    assert np.mean(resid**2) > np.mean(in_sample**2)
 
 
 def test_ra_class_picks_the_largest_share():

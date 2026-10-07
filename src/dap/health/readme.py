@@ -35,7 +35,7 @@ def _area(x: dict) -> str:
 
 
 def _pct(x: float) -> str:
-    return f"{x:+.0f}%"
+    return f"{round(x):+d}%"  # round() first, so -0.3 prints as +0%, not -0%
 
 
 def render(r: dict) -> str:
@@ -81,6 +81,28 @@ def render(r: dict) -> str:
         "- Most above expected: " + "; ".join(_area(x) for x in above) + ".",
         "- Most below expected: " + "; ".join(_area(x) for x in below) + ".",
         "- By state (population-weighted): " + ", ".join(f"{s} {_pct(v)}" for s, v in states) + ".",
+    ]
+    lg, lgs = r["models"]["lightgbm"], r["models"]["lightgbm_state"]
+    offsets = r["interpretation"]["lightgbm_state_intercept"]["pct_offset_by_state"]
+
+    def by_state(d: dict) -> str:  # results.json stores keys sorted, so order by value here
+        return ", ".join(
+            f"{STATE_SHORT[s]} {_pct(v)}" for s, v in sorted(d.items(), key=lambda kv: -kv[1])
+        )
+
+    lines += [
+        "- LightGBM + state intercept, with SA4s held out: R² "
+        f"{lg['spatial']['r2']['mean']:.2f} to {lgs['spatial']['r2']['mean']:.2f}, residual "
+        f"Moran's I {lg['residual_moran_I']:.2f} to {lgs['residual_moran_I']:.2f}. The state "
+        "offsets it learns from every area: "
+        + by_state(offsets)
+        + ". What's left by state after it: "
+        + by_state(lgs["pct_vs_expected_by_state"])
+        + ". Most above expected after it: "
+        + "; ".join(
+            f"{x['sa3']} ({_pct(x['pct_vs_expected'])})" for x in lgs["most_above_expected"]
+        )
+        + ".",
         "",
         END,
     ]

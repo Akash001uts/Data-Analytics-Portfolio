@@ -101,7 +101,7 @@ def cv_comparison(results: dict) -> plt.Figure:
     models = results["models"]
     names = list(models)[::-1]
     y = np.arange(len(names))
-    fig, ax = plt.subplots(figsize=(7.5, 3.6))
+    fig, ax = plt.subplots(figsize=(7.5, max(3.6, 0.6 * len(names) + 0.6)))
     for scheme, colour, offset, text in (
         ("random", CATEGORICAL[1], 0.14, "Random K-fold"),
         ("spatial", CATEGORICAL[0], -0.14, "Grouped by SA4"),

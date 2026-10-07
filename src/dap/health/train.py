@@ -19,9 +19,11 @@ from dap.health.build import TABLE_NAME
 from dap.health.evaluate import N_REPEATS, N_SPLITS, SCHEMES, run_cv, score, summarise
 from dap.health.features import feature_names
 from dap.health.models import (
+    FEATURE_MODELS,
     LAG_FEATURES,
     MODELS,
     LightGBM,
+    LightGBMState,
     ModelData,
     Ridge,
     SpatialLag,
@@ -73,7 +75,16 @@ def autocorrelation(data: ModelData) -> tuple[dict, pd.DataFrame]:
     return out, lisa
 
 
-def compare_models(data: ModelData) -> tuple[dict, dict[str, pd.Series]]:
+def state_lean(data: ModelData, log_ratio: pd.Series, states: pd.Series) -> dict:
+    """Population-weighted % above (+) or below (-) expected in each state."""
+    df = pd.DataFrame({"r": log_ratio, "w": data.weight, "state": states.reindex(data.X.index)})
+    lean = df.groupby("state")[["r", "w"]].apply(
+        lambda d: 100 * (np.exp(np.average(d.r, weights=d.w)) - 1)
+    )
+    return lean.sort_values(ascending=False).to_dict()
+
+
+def compare_models(data: ModelData, states: pd.Series) -> tuple[dict, dict[str, pd.Series]]:
     """Every model under spatial and random CV. Returns metrics and mean out-of-fold log predictions
     from the spatial scheme."""
     results, oof = {}, {}
@@ -106,6 +117,11 @@ def compare_models(data: ModelData) -> tuple[dict, dict[str, pd.Series]]:
         entry["optimism_r2"] = entry["random"]["r2"]["mean"] - entry["spatial"]["r2"]["mean"]
         resid = data.y - oof[cls.name]
         entry["residual_moran_I"] = spatial.global_moran(resid, data.w)["I"]
+        entry["pct_vs_expected_by_state"] = state_lean(data, resid, states)
+        entry["most_above_expected"] = [
+            {"sa3": data.names[a], "pct_vs_expected": float(100 * (np.exp(resid[a]) - 1))}
+            for a in resid.nlargest(3).index
+        ]
         results[cls.name] = entry
     return results, oof
 
@@ -131,7 +147,7 @@ def sensitivity(table: gpd.GeoDataFrame) -> dict:
     return out
 
 
-def explain(data: ModelData) -> dict:
+def explain(data: ModelData, states: pd.Series) -> dict:
     """Full-data fits, for interpretation only (all reported errors come from CV)."""
     all_rows = np.arange(len(data))
 
@@ -150,6 +166,11 @@ def explain(data: ModelData) -> dict:
     for f in mean_abs.index[:TOP_N]:
         ok = data.X[f].notna()
         direction[f] = float(np.corrcoef(data.X[f][ok].rank(), shap[f][ok].rank())[0, 1])
+    # The state offsets learnt on every area, as % on top of the LightGBM prediction
+    lgbm_state = LightGBMState().fit(data, all_rows)
+    code_to_name = dict(zip(data.meta.state_code, states.reindex(data.X.index), strict=True))
+    offsets = {code_to_name[c]: 100 * (np.exp(v) - 1) for c, v in lgbm_state.offset_.items()}
+
     return {
         "ridge_standardised_coefficients": coef.head(15).to_dict(),
         "ridge_alpha": float(ridge.pipeline_.named_steps["ridge"].alpha_),
@@ -168,6 +189,11 @@ def explain(data: ModelData) -> dict:
         },
         "shap_mean_abs_log": mean_abs.head(15).to_dict(),
         "shap_direction_rank_r": direction,
+        "lightgbm_state_intercept": {
+            "state_sd_log": lgbm_state.state_sd_,
+            "shrinkage_k": None if np.isinf(lgbm_state.k_) else lgbm_state.k_,
+            "pct_offset_by_state": dict(sorted(offsets.items(), key=lambda kv: -kv[1])),
+        },
     }, shap
 
 
@@ -176,8 +202,9 @@ def residuals(
 ) -> tuple[dict, pd.DataFrame]:
     """Observed / expected from out-of-fold (spatial CV) predictions, and LISA on the log ratio.
 
-    `states` holds each area's state name. No model sees the state, so a state-wide lean in the
-    residuals points at something state-level the features miss (or at how hospitals record).
+    `states` holds each area's state name. The map's model never sees the state, so a state-wide
+    lean in the residuals points at something state-level the features miss (or at how hospitals
+    record).
     """
     log_ratio = data.y - log_pred
     lisa = spatial.local_moran(log_ratio, data.w)
@@ -207,11 +234,6 @@ def residuals(
 
     by = df.sort_values("log_ratio")
     w = data.weight
-    by_state = (
-        df.assign(w=w)
-        .groupby("state")[["log_ratio", "w"]]
-        .apply(lambda d: 100 * (np.exp(np.average(d.log_ratio, weights=d.w)) - 1))
-    )
     return {
         "model": model,
         "areas_over_20pct_above": int((df.pct_vs_expected > 20).sum()),
@@ -223,7 +245,7 @@ def residuals(
         "most_below_expected": top(by.head(TOP_N)),
         "moran_log_ratio": spatial.global_moran(log_ratio, data.w),
         "lisa_clusters": spatial.cluster_counts(lisa),
-        "pct_vs_expected_by_state": by_state.sort_values(ascending=False).to_dict(),
+        "pct_vs_expected_by_state": state_lean(data, log_ratio, states),
     }, df
 
 
@@ -236,12 +258,10 @@ def train(table_path: Path | None = None, reports_dir: Path | None = None) -> di
     reports = Path(reports_dir or paths.reports_dir())
 
     auto, lisa = autocorrelation(data)
-    compare, oof = compare_models(data)
-    best = max(
-        ("ridge", "spatial_lag", "lightgbm"), key=lambda m: compare[m]["spatial"]["r2"]["mean"]
-    )
+    compare, oof = compare_models(data, table.state_name)
+    best = max(FEATURE_MODELS, key=lambda m: compare[m]["spatial"]["r2"]["mean"])
     resid, resid_df = residuals(data, oof[best], best, table.state_name)
-    interp, shap = explain(data)
+    interp, shap = explain(data, table.state_name)
     sens = sensitivity(table)
 
     results = {

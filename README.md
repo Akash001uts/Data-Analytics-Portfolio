@@ -48,7 +48,8 @@ What I found:
 - A simple baseline (state and remoteness) gets a fair way. LightGBM does best, but by less than I expected.
 - Maryborough in Queensland is the biggest surprise, at roughly double what its profile predicts, and it's been
   high in every year of the data.
-- The leftover errors lean by state, even though no model was told the state.
+- The leftover errors lean by state, even though the features don't include it. Giving LightGBM a state intercept
+  made it the best model, but the NT and ACT still sit above expected.
 
 The full write-up, with the results table, is in the [project README](projects/avoidable-hospitalisations).
 There's also an [interactive version of the map](https://akash001uts.github.io/Data-Analytics-Portfolio/) you can open in any browser. `uv run dap health report` rebuilds it.

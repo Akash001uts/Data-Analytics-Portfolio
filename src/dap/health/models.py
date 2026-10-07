@@ -276,4 +276,83 @@ class LightGBM:
         return pd.DataFrame(contrib[:, :-1], index=X.index, columns=X.columns)
 
 
-MODELS = (NationalMean, RemotenessStateMeans, Ridge, SpatialLag, LightGBM)
+class StateIntercept:
+    """A base model plus a random intercept for each state, shrunk towards zero.
+
+    The residuals of the feature-only models lean by state, so this learns how far each state sits
+    from the base model. Training residuals would understate that (a flexible model partly fits
+    them), so the residuals come from an inner SA4-grouped CV on the training rows only. Each
+    state's offset is its population-weighted mean residual times n / (n + k), an empirical Bayes
+    shrinkage where k = residual variance / between-state variance (method of moments). The base
+    model is then refitted on every training row and the offset added to its predictions.
+
+    A state with no training areas gets no offset. Under SA4 folds that happens to the ACT (one SA4)
+    whenever it's held out, so the ACT is always predicted from features alone.
+    """
+
+    base: type = Ridge
+    inner_splits = 5
+
+    def _inner_residuals(self, data: ModelData, train: np.ndarray) -> np.ndarray:
+        from sklearn.model_selection import GroupKFold
+
+        resid = np.full(len(train), np.nan)
+        groups = data.meta.sa4_code.to_numpy()[train]
+        n = min(self.inner_splits, len(set(groups)))
+        cv = GroupKFold(n_splits=n, shuffle=True, random_state=SEED)
+        for tr, te in cv.split(train, groups=groups):
+            pred = self.base().fit(data, train[tr]).predict(data, train[te])
+            resid[te] = data.y.to_numpy()[train[te]] - pred
+        return resid
+
+    def fit(self, data: ModelData, train: np.ndarray):
+        resid = self._inner_residuals(data, train)
+        df = pd.DataFrame(
+            {
+                "r": resid,
+                "w": fold_weights(data.weight, train),
+                "state": data.meta.state_code.to_numpy()[train],
+            }
+        )
+        g = df.groupby("state")
+        mean = g.apply(lambda d: np.average(d.r, weights=d.w), include_groups=False)
+        # Effective sample size of a weighted mean, so big-city areas don't count as many states
+        n_eff = g.w.sum() ** 2 / g.w.apply(lambda w: (w**2).sum())
+        within = float(np.average((df.r - df.state.map(mean)) ** 2, weights=df.w))
+        between = float(np.var(mean.to_numpy(), ddof=1)) if len(mean) > 1 else 0.0
+        tau2 = max(between - np.mean(within / n_eff), 0.0)
+        self.k_ = within / tau2 if tau2 > 0 else np.inf
+        self.state_sd_ = float(np.sqrt(tau2))
+        self.offset_ = (mean * n_eff / (n_eff + self.k_)).to_dict()
+        self.model_ = self.base().fit(data, train)
+        return self
+
+    def predict(self, data: ModelData, test: np.ndarray) -> np.ndarray:
+        states = data.meta.state_code.to_numpy()[test]
+        offset = np.array([self.offset_.get(s, 0.0) for s in states])
+        return self.model_.predict(data, test) + offset
+
+
+class RidgeState(StateIntercept):
+    name = "ridge_state"
+    label = "Ridge + state intercept"
+    base = Ridge
+
+
+class LightGBMState(StateIntercept):
+    name = "lightgbm_state"
+    label = "LightGBM + state intercept"
+    base = LightGBM
+
+
+MODELS = (
+    NationalMean,
+    RemotenessStateMeans,
+    Ridge,
+    SpatialLag,
+    LightGBM,
+    RidgeState,
+    LightGBMState,
+)
+# Feature-only models: the residual map uses the best of these, so a state-wide lean stays visible
+FEATURE_MODELS = ("ridge", "spatial_lag", "lightgbm")
