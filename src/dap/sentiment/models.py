@@ -84,6 +84,6 @@ class TfidfLogistic:
         return out
 
 
-def roberta_labels(probs: pd.DataFrame) -> np.ndarray:
-    cols = [f"p_{lab}" for lab in LABELS]
+def roberta_labels(probs: pd.DataFrame, prefix: str = "p_") -> np.ndarray:
+    cols = [f"{prefix}{lab}" for lab in LABELS]
     return np.array(LABELS)[probs[cols].to_numpy().argmax(axis=1)]

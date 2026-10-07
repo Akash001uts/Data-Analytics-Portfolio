@@ -196,6 +196,7 @@ def test_slices_cover_every_review():
         assert sum(v["n"] for v in group.values()) == len(df)
     assert out["contrast_word"]["has a contrast word"]["n"] == 1
     assert out["truncated_by_roberta"]["truncated"]["n"] == 1
+    assert out["cut_for_finetuned"]["cut"]["n"] == 2
     assert out["mentions_stars"]["mentions stars"]["n"] == 1  # "starstruck" wouldn't count
 
 
@@ -208,4 +209,63 @@ def test_missing_roberta_cache_says_what_to_run(tmp_path):
     from dap.sentiment.transformer import read_cache
 
     with pytest.raises(FileNotFoundError, match="dap sentiment transformer"):
+        read_cache(tmp_path / "nope.csv")
+
+
+def test_finetuning_data_comes_from_train_and_validation_reviewers_only(monkeypatch):
+    from dap.sentiment import finetune as F
+
+    monkeypatch.setattr(F, "TRAIN_SIZE", 1000)
+    monkeypatch.setattr(F, "VAL_SIZE", 200)
+    df = synthetic_reviews()
+    df["split"] = C.reviewer_split(df.user_id)
+    df["in_eval"] = df.review_id.isin(C.eval_sample(df[df.split == "test"], n=500).review_id)
+    train, val = F.training_data(df)
+    assert len(train) == 1000 and len(val) == 200
+    assert set(train.split) == {"train"} and set(val.split) == {"validation"}
+    assert not (train.in_eval.any() or val.in_eval.any())
+    assert not set(train.user_id) & set(val.user_id)
+    want = df[df.split == "train"].label.value_counts(normalize=True)
+    assert (train.label.value_counts(normalize=True) - want).abs().max() < 0.01
+    again, _ = F.training_data(df.sample(frac=1, random_state=5))
+    assert list(again.review_id) == list(train.review_id)
+
+
+def test_finetuning_class_weights_are_balanced():
+    from dap.sentiment.finetune import class_weights
+
+    labels = ["positive"] * 8 + ["negative"] * 2 + ["neutral"] * 2
+    counts = np.array([2, 2, 8])  # in LABELS order
+    assert np.allclose(class_weights(labels) * counts, len(labels) / 3)
+
+
+def test_length_batches_use_every_review_once():
+    from dap.sentiment.finetune import length_batches
+
+    lengths = np.random.default_rng(1).integers(5, 300, 1003)
+    batches = length_batches(lengths, 16, seed=0)
+    assert sorted(np.concatenate(batches)) == list(range(1003))
+    assert max(len(b) for b in batches) == 16
+    again = length_batches(lengths, 16, seed=0)
+    assert all((a == b).all() for a, b in zip(batches, again, strict=True))
+
+
+def test_finetuned_labels_read_their_own_columns():
+    probs = pd.DataFrame(
+        {
+            "p_negative": [0.9],
+            "p_neutral": [0.05],
+            "p_positive": [0.05],
+            "ft_p_negative": [0.1],
+            "ft_p_neutral": [0.2],
+            "ft_p_positive": [0.7],
+        }
+    )
+    assert list(M.roberta_labels(probs, prefix="ft_p_")) == ["positive"]
+
+
+def test_missing_finetuned_cache_says_what_to_run(tmp_path):
+    from dap.sentiment.finetune import read_cache
+
+    with pytest.raises(FileNotFoundError, match="dap sentiment finetune"):
         read_cache(tmp_path / "nope.csv")

@@ -17,5 +17,5 @@ repos:
         entry: data files belong in data/raw (gitignored), not in git
         language: fail
         files: \.(xlsx|xls|zip|parquet|gpkg|shp|csv)$
-        # RoBERTa's cached predictions are an output (review ids and probabilities, no text)
-        exclude: ^(tests/fixtures/|reports/sentiment/roberta_predictions\.csv$)
+        # The transformers' cached predictions are outputs (review ids and probabilities, no text)
+        exclude: ^(tests/fixtures/|reports/sentiment/(roberta|finetuned)_predictions\.csv$)

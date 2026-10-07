@@ -87,6 +87,8 @@ def slices(df: pd.DataFrame, preds: dict[str, np.ndarray]) -> dict:
     groups = {
         "length": pd.cut(words, LENGTH_BINS, labels=LENGTH_LABELS).astype(str),
         "truncated_by_roberta": np.where(df.n_tokens > 512, "truncated", "fits in 512 tokens"),
+        # The fine-tuned model only reads the first 128 tokens (same tokeniser as RoBERTa)
+        "cut_for_finetuned": np.where(df.n_tokens > 128, "cut", "fits in 128 tokens"),
         "contrast_word": np.where(df.text.str.contains(CONTRAST), "has a contrast word", "none"),
         "mentions_stars": np.where(df.text.str.contains(STARS), "mentions stars", "no mention"),
     }
