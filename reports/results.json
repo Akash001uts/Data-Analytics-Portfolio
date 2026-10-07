@@ -10,6 +10,20 @@
     "seed": 20261006
   },
   "interpretation": {
+    "lightgbm_state_intercept": {
+      "pct_offset_by_state": {
+        "Australian Capital Territory": 6.334,
+        "New South Wales": -7.641,
+        "Northern Territory": 42.82,
+        "Queensland": 12.6,
+        "South Australia": 0.2301,
+        "Tasmania": -9.293,
+        "Victoria": 1.604,
+        "Western Australia": -6.214
+      },
+      "shrinkage_k": 0.6595,
+      "state_sd_log": 0.1574
+    },
     "ridge_alpha": 14.68,
     "ridge_standardised_coefficients": {
       "age_65_plus_pct": -0.03026,
@@ -97,7 +111,31 @@
         "predicted": 3241.0,
         "sa3": "Alice Springs"
       },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 120.9,
+          "sa3": "Maryborough"
+        },
+        {
+          "pct_vs_expected": 109.6,
+          "sa3": "Alice Springs"
+        },
+        {
+          "pct_vs_expected": 75.87,
+          "sa3": "Palmerston"
+        }
+      ],
       "optimism_r2": 0.1292,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 10.61,
+        "New South Wales": -7.708,
+        "Northern Territory": 57.16,
+        "Queensland": 12.23,
+        "South Australia": 0.7937,
+        "Tasmania": -8.502,
+        "Victoria": 2.288,
+        "Western Australia": -6.864
+      },
       "random": {
         "mae": {
           "mean": 292.4,
@@ -136,6 +174,81 @@
         }
       }
     },
+    "lightgbm_state": {
+      "label": "LightGBM + state intercept",
+      "largest_over": {
+        "observed": 2335.0,
+        "predicted": 3931.0,
+        "sa3": "Maryborough - Pyrenees"
+      },
+      "largest_under": {
+        "observed": 9690.0,
+        "predicted": 3241.0,
+        "sa3": "Alice Springs"
+      },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 98.4,
+          "sa3": "Maryborough"
+        },
+        {
+          "pct_vs_expected": 78.97,
+          "sa3": "Kimberley"
+        },
+        {
+          "pct_vs_expected": 74.82,
+          "sa3": "Alice Springs"
+        }
+      ],
+      "optimism_r2": 0.1008,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 10.61,
+        "New South Wales": 1.403,
+        "Northern Territory": 20.16,
+        "Queensland": -0.729,
+        "South Australia": -1.766,
+        "Tasmania": -1.03,
+        "Victoria": -0.3392,
+        "Western Australia": -0.2665
+      },
+      "random": {
+        "mae": {
+          "mean": 268.0,
+          "sd": 7.551
+        },
+        "r2": {
+          "mean": 0.736,
+          "sd": 0.02091
+        },
+        "r2_log": {
+          "mean": 0.7374,
+          "sd": 0.01682
+        },
+        "rmse": {
+          "mean": 397.9,
+          "sd": 15.73
+        }
+      },
+      "residual_moran_I": 0.3241,
+      "spatial": {
+        "mae": {
+          "mean": 296.3,
+          "sd": 21.69
+        },
+        "r2": {
+          "mean": 0.6352,
+          "sd": 0.1091
+        },
+        "r2_log": {
+          "mean": 0.6617,
+          "sd": 0.0611
+        },
+        "rmse": {
+          "mean": 464.1,
+          "sd": 67.19
+        }
+      }
+    },
     "national_mean": {
       "label": "National mean",
       "largest_over": {
@@ -148,7 +261,31 @@
         "predicted": 2481.0,
         "sa3": "Alice Springs"
       },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 288.1,
+          "sa3": "Alice Springs"
+        },
+        {
+          "pct_vs_expected": 242.3,
+          "sa3": "Kimberley"
+        },
+        {
+          "pct_vs_expected": 205.7,
+          "sa3": "Katherine"
+        }
+      ],
       "optimism_r2": 0.006384,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": -1.641,
+        "New South Wales": -13.14,
+        "Northern Territory": 98.67,
+        "Queensland": 26.83,
+        "South Australia": 1.332,
+        "Tasmania": -4.315,
+        "Victoria": 0.823,
+        "Western Australia": -11.6
+      },
       "random": {
         "mae": {
           "mean": 510.7,
@@ -199,7 +336,31 @@
         "predicted": 2907.0,
         "sa3": "Alice Springs"
       },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 135.0,
+          "sa3": "Alice Springs"
+        },
+        {
+          "pct_vs_expected": 108.2,
+          "sa3": "Outback - North and East"
+        },
+        {
+          "pct_vs_expected": 98.87,
+          "sa3": "Maryborough"
+        }
+      ],
       "optimism_r2": 0.09454,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 2.976,
+        "New South Wales": -0.4019,
+        "Northern Territory": 48.61,
+        "Queensland": 0.6263,
+        "South Australia": -2.74,
+        "Tasmania": -8.043,
+        "Victoria": 0.04945,
+        "Western Australia": -1.638
+      },
       "random": {
         "mae": {
           "mean": 392.9,
@@ -250,7 +411,31 @@
         "predicted": 3062.0,
         "sa3": "Maryborough"
       },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 110.5,
+          "sa3": "Maryborough"
+        },
+        {
+          "pct_vs_expected": 68.64,
+          "sa3": "Palmerston"
+        },
+        {
+          "pct_vs_expected": 67.19,
+          "sa3": "Kimberley"
+        }
+      ],
       "optimism_r2": 0.1112,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 7.462,
+        "New South Wales": -6.749,
+        "Northern Territory": 14.31,
+        "Queensland": 10.97,
+        "South Australia": 1.635,
+        "Tasmania": -6.689,
+        "Victoria": 1.15,
+        "Western Australia": -5.074
+      },
       "random": {
         "mae": {
           "mean": 310.7,
@@ -289,6 +474,81 @@
         }
       }
     },
+    "ridge_state": {
+      "label": "Ridge + state intercept",
+      "largest_over": {
+        "observed": 7109.0,
+        "predicted": 28860.0,
+        "sa3": "Daly - Tiwi - West Arnhem"
+      },
+      "largest_under": {
+        "observed": 4773.0,
+        "predicted": 1222.0,
+        "sa3": "Palmerston"
+      },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 124.0,
+          "sa3": "Palmerston"
+        },
+        {
+          "pct_vs_expected": 99.92,
+          "sa3": "Litchfield"
+        },
+        {
+          "pct_vs_expected": 93.48,
+          "sa3": "Maryborough"
+        }
+      ],
+      "optimism_r2": 0.1532,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 7.462,
+        "New South Wales": 0.3085,
+        "Northern Territory": 30.26,
+        "Queensland": 0.3652,
+        "South Australia": -0.589,
+        "Tasmania": -1.922,
+        "Victoria": 0.06466,
+        "Western Australia": -0.09692
+      },
+      "random": {
+        "mae": {
+          "mean": 281.0,
+          "sd": 12.01
+        },
+        "r2": {
+          "mean": 0.4962,
+          "sd": 0.2519
+        },
+        "r2_log": {
+          "mean": 0.7104,
+          "sd": 0.02331
+        },
+        "rmse": {
+          "mean": 538.8,
+          "sd": 122.9
+        }
+      },
+      "residual_moran_I": 0.3034,
+      "spatial": {
+        "mae": {
+          "mean": 301.0,
+          "sd": 12.12
+        },
+        "r2": {
+          "mean": 0.343,
+          "sd": 0.2521
+        },
+        "r2_log": {
+          "mean": 0.6337,
+          "sd": 0.04591
+        },
+        "rmse": {
+          "mean": 618.6,
+          "sd": 121.1
+        }
+      }
+    },
     "spatial_lag": {
       "label": "Spatial lag (ML)",
       "largest_over": {
@@ -301,7 +561,31 @@
         "predicted": 3144.0,
         "sa3": "Maryborough"
       },
+      "most_above_expected": [
+        {
+          "pct_vs_expected": 98.53,
+          "sa3": "Maryborough"
+        },
+        {
+          "pct_vs_expected": 63.77,
+          "sa3": "Alice Springs"
+        },
+        {
+          "pct_vs_expected": 63.46,
+          "sa3": "Tuggeranong"
+        }
+      ],
       "optimism_r2": 0.08414,
+      "pct_vs_expected_by_state": {
+        "Australian Capital Territory": 24.51,
+        "New South Wales": -16.67,
+        "Northern Territory": 12.63,
+        "Queensland": 14.34,
+        "South Australia": 6.094,
+        "Tasmania": -10.56,
+        "Victoria": 0.8385,
+        "Western Australia": 0.02399
+      },
       "random": {
         "mae": {
           "mean": 398.3,
