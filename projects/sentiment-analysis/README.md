@@ -65,22 +65,22 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 
 ## What I found
 
-- **My original claim holds up, once it's measured.** RoBERTa beats VADER, with or without tuning VADER's
+- My original claim holds up, once it's measured. RoBERTa beats VADER, with or without tuning VADER's
   thresholds, and the interval for the difference sits well clear of zero.
-- **But a simple model trained on these reviews beats it.** TF-IDF with logistic regression, trained on food
+- But a simple model trained on these reviews beats it. TF-IDF with logistic regression, trained on food
   reviews, beats the Twitter-trained RoBERTa used as is. That's a model trained on the right text against a bigger
   model trained on different text, so I can't yet say how much is the data and how much the model.
-- **Accuracy would have told the wrong story.** Nearly four in five reviews are positive, so tuning VADER's
+- Accuracy would have told the wrong story. Nearly four in five reviews are positive, so tuning VADER's
   thresholds lowers its accuracy while raising its macro-F1, because it starts finding some neutral reviews.
-- **VADER's default thresholds call most negative reviews positive.** It adds up word scores, so "good" in "a good
+- VADER's default thresholds call most negative reviews positive. It adds up word scores, so "good" in "a good
   chunk of cash for nothing" and "like" in "tastes like it's way past its expiration date" push a one-star review
   towards positive.
-- **Neutral is the hard class, and partly a label problem.** Three-star reviews are mostly mild complaints or mixed
+- Neutral is the hard class, and partly a label problem. Three-star reviews are mostly mild complaints or mixed
   feelings, while the Twitter model's "neutral" means "no sentiment". Some one-star reviews praise the food and
   complain about the price, and at least one reads like a five-star review with the wrong rating.
-- **RoBERTa gets worse as reviews get longer; TF-IDF doesn't.** Very few reviews hit RoBERTa's 512-token limit, so
+- RoBERTa gets worse as reviews get longer; TF-IDF doesn't. Very few reviews hit RoBERTa's 512-token limit, so
   truncation isn't the main reason.
-- **I checked whether TF-IDF was cheating** by reading ratings written in the text ("three stars"). Those phrases
+- I checked whether TF-IDF was cheating by reading ratings written in the text ("three stars"). Those phrases
   are among its strongest clues, but only a small share of reviews contain them, and its score is about the same
   without them.
 

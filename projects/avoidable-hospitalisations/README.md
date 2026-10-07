@@ -79,66 +79,66 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 
 <!-- results:end -->
 
-- **Neighbouring areas are very alike,** so a random train/test split flatters every model that learns from the
+- Neighbouring areas are very alike, so a random train/test split flatters every model that learns from the
   data. Holding out whole SA4s takes a noticeable chunk off every score, and the most off LightGBM, the most
   flexible model. If I'd only reported random folds, I'd have overstated how well it works.
-- **A simple baseline goes a long way.** Knowing just the state and how remote an area is explains a fair share of
+- A simple baseline goes a long way. Knowing just the state and how remote an area is explains a fair share of
   the variation. All the features and boosted trees add to that, but not by as much as I expected.
-- **Which model is "best" depends on the scale.** Ridge regression does best on the log scale but is unstable on
+- Which model is "best" depends on the scale. Ridge regression does best on the log scale but is unstable on
   the rate scale, because when a remote region is held out it extrapolates and predicts rates several times too high.
   LightGBM has the opposite problem: trees can't predict above what they've seen, so it underestimates the most
   remote areas. I used LightGBM for the residual map and kept that caveat.
-- **The spatial lag model looked great until I tested it honestly.** Fitted on every area, it explains most of the
+- The spatial lag model looked great until I tested it honestly. Fitted on every area, it explains most of the
   variation and leaves almost no pattern behind. But that strength came from knowing the neighbours' rates. To
   predict an area whose whole region is unknown, it can only use features, and on the log scale it drops to one of
   the weaker models. Fitted on everything but using features alone, it scores about the same, so it's the
   neighbours' rates, not overfitting, that made it look good.
-- **Maryborough in Queensland is the biggest surprise,** at roughly double what its profile predicts, with Hervey Bay
+- Maryborough in Queensland is the biggest surprise, at roughly double what its profile predicts, with Hervey Bay
   next door also near the top. It's been high in every year of the AIHW data, so it isn't a one-off.
-- **Fairfield shows up, as I'd guessed it might,** among the areas furthest below expected, along with several
+- Fairfield shows up, as I'd guessed it might, among the areas furthest below expected, along with several
   Tasmanian and regional areas.
-- **The leftover errors lean by state,** even though no model was told the state: Queensland and the ACT above
+- The leftover errors lean by state, even though no model was told the state: Queensland and the ACT above
   expected, New South Wales, Tasmania and Western Australia below. I can't tell yet whether that's about health
   systems or about how hospitals record admissions. The residuals are still clustered too, so neighbouring areas
   share something my features don't capture.
-- **Housing stress pushes predictions down,** which surprised me. I don't think it protects anyone: it's highest
+- Housing stress pushes predictions down, which surprised me. I don't think it protects anyone: it's highest
   in the big cities, where rates are lowest, so it's acting as a marker for "city".
 
 ### From exploring the data ([notebook 01](notebooks/01_explore_the_data.ipynb))
 
-- **Remoteness and disadvantage both line up with higher rates,** and they overlap a lot. The rate climbs at every
+- Remoteness and disadvantage both line up with higher rates, and they overlap a lot. The rate climbs at every
   step away from the major cities, and remote areas are in a league of their own, with the biggest spread too.
-- **Nearly every strong relationship is some version of "this area is poorer".** Welfare dependence, unemployment
+- Nearly every strong relationship is some version of "this area is poorer". Welfare dependence, unemployment
   benefits, Health Care Cards, single-parent families, the IRSD and private health insurance all point the same way,
   and they're so closely related to each other that a model can't really tell them apart.
-- **GP use barely relates to the rate,** which surprised me, since PPH is meant to reflect primary care. I checked
+- GP use barely relates to the rate, which surprised me, since PPH is meant to reflect primary care. I checked
   whether it was just an age effect (the GP figures aren't age-standardised) and it isn't: it stays near zero after
   allowing for age or disadvantage. The models mostly agree, apart from after-hours GP visits, which LightGBM links
   to *more* admissions.
-- **Fairfield in Sydney stands out.** It's one of the most disadvantaged areas in the country, but its rate is below
+- Fairfield in Sydney stands out. It's one of the most disadvantaged areas in the country, but its rate is below
   the national median. More than half its residents were born in non-English-speaking countries, which fits what
   researchers call the "healthy migrant effect". The residual map does pick it out: Fairfield is one of the ten
   SA3s furthest below its expected rate (the full list is in `reports/results.json`).
-- **COVID shifted the level, not the pattern.** Rates dipped nationally, but the ranking of areas before and after is
+- COVID shifted the level, not the pattern. Rates dipped nationally, but the ranking of areas before and after is
   very similar, so using 2023-24 is safe.
-- **The rate is very skewed,** with a few remote areas far above the rest, so I modelled the log of the rate.
+- The rate is very skewed, with a few remote areas far above the rest, so I modelled the log of the rate.
 
 ### From checking the sources ([data.md](data.md))
 
-- **The most detailed data was the wrong choice.** PHIDU publishes PPH for about 1,165 small areas, which is much
+- The most detailed data was the wrong choice. PHIDU publishes PPH for about 1,165 small areas, which is much
   more detail than the AIHW's 340 SA3s. But it only counts public hospitals, and it only covers 2020-21, the middle of
   COVID. When I compared the two at SA3 level, the public-only rate fell well short of the all-hospital rate in areas
   with lots of private health insurance. A model built on the public-only numbers would partly be learning who has
   private cover. I went with the SA3 data instead, which counts public and private hospitals and goes up to 2023-24.
-- **COVID shows up clearly.** National PPH rates dropped in 2020-21 and have mostly recovered since. Vaccine-preventable
+- COVID shows up clearly. National PPH rates dropped in 2020-21 and have mostly recovered since. Vaccine-preventable
   admissions (mostly pneumonia and flu) fell the furthest, which makes sense with lockdowns and masks. I'm using
   2023-24 as the main year and 2018-19 as a pre-COVID check.
-- **The data I'd planned on for GP use doesn't exist at the small-area level.** I'd assumed the Social Health Atlas had
+- The data I'd planned on for GP use doesn't exist at the small-area level. I'd assumed the Social Health Atlas had
   GP visit rates, but the current release doesn't. The AIHW's Medicare tables have them by SA3, which was another
   reason to go with SA3.
-- **The areas nest neatly.** Every small area sits inside exactly one SA3, and every SA3 inside one SA4. That matters,
+- The areas nest neatly. Every small area sits inside exactly one SA3, and every SA3 inside one SA4. That matters,
   because the spatial cross-validation holds out whole SA4s at a time.
-- **Some of the most remote areas have no published rate.** The AIHW suppresses rates for areas with very small numbers.
+- Some of the most remote areas have no published rate. The AIHW suppresses rates for areas with very small numbers.
   Most of those are near-empty areas, but a few are remote Northern Territory and Pilbara regions that probably have
   some of the highest rates in the country. The model never sees them, so it's weakest exactly where need is
   highest.

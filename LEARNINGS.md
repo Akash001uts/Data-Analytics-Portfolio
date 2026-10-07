@@ -101,12 +101,12 @@ This turned out to be the most important decision so far.
   a noticeable amount off the score of every model that learns from the data, and the most off the most flexible
   one. Reporting only the random
   split would have overstated my results.
-- **A model that looks best in-sample can be the one that cheats most.** The spatial lag model explained most of the
+- **The best-looking model was the one cheating the most.** The spatial lag model explained most of the
   variation when fitted on every area, and left almost no pattern in its residuals. But its strength was using the
   neighbours' actual rates. To predict an area whose whole region is held out, I had to use the version that only
   needs features, and then it was one of the weaker models on the log scale. Giving it the neighbours' real rates in cross-validation
   would have leaked the answer without any error message.
-- **Prove your leakage tests can fail.** I wrote a test that changes the test areas' rates and checks the
+- **I checked my leakage tests could actually fail.** I wrote a test that changes the test areas' rates and checks the
   predictions don't move. A passing test only means something if it would catch a leak, so I wrote deliberately
   leaky versions (a spatial lag that used neighbours' rates, a mean taken over all rows, and a scaler fitted on
   everything) and checked that each one failed.
@@ -152,7 +152,7 @@ This turned out to be the most important decision so far.
   loads the pinned weights, and the pull request download is a background "convert it for next time" step, which I
   switched off. I also checked the load report: no weights were missing, so the classifier wasn't randomly
   initialised.
-- **A test that can't fail isn't a test.** My check for reviews that mention "stars" matched nothing, because a
+- **My stars check was broken.** My check for reviews that mention "stars" matched nothing, because a
   `\b` in my regex got turned into a backspace character on its way through the shell. The slice test still
   passed, because none of its example texts mentioned stars. I fixed the regex and added a test text that does.
 - **Read the mistakes.** Some one-star reviews praise the food and complain about the price, and one reads like a
