@@ -52,7 +52,7 @@ def test_no_allowlisted_sheet_is_denylisted():
         assert not DENY_SHEET_RE.match(f.sheet)
 
 
-def test_concordance_gives_the_phase_0_geography(expected_codes):
+def test_concordance_gives_the_geography_in_data_md(expected_codes):
     phas, sa3s = expected_codes
     assert (len(phas), len(sa3s)) == (1165, 336)
 

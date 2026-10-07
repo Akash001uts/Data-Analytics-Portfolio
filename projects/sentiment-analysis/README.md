@@ -1,13 +1,13 @@
 # Sentiment analysis, redone
 
-**Status:** built and evaluated. Every number in the results table below is generated from
-`reports/sentiment/results.json` by `dap sentiment train`, and a test fails if they drift apart.
-
 My first sentiment project compared VADER (a rule-based scorer) with a RoBERTa transformer on Amazon Fine Food Reviews,
 and concluded that RoBERTa was clearly better. Looking back, I never actually measured that. I plotted each model's
 scores against the star ratings and looked at a few example reviews, but I never calculated an accuracy or F1
 score. I also only used 500 reviews, dropped any review that was too long instead of truncating it, and used a model
-trained on tweets for food reviews. So this time I want to answer the question properly.
+trained on tweets for food reviews. So this time I wanted to answer the question properly.
+
+Every number in the results table below is written by `dap sentiment train` from `reports/sentiment/results.json`,
+not typed in by hand, and a test fails if they drift apart.
 
 ## The question
 
@@ -102,8 +102,9 @@ uv run dap sentiment train     # VADER, TF-IDF, and scoring everything (uses the
 To re-run RoBERTa itself (about 25 minutes on a laptop CPU): `uv sync --group nlp`, then
 `uv run dap sentiment transformer`.
 
-## Credits
+## Credits and licence
 
-Data: J. McAuley and J. Leskovec, "From amateurs to connoisseurs: modeling the evolution of user expertise through
-online reviews", WWW 2013, via SNAP. SNAP doesn't state a licence for this dataset. Model:
-`cardiffnlp/twitter-roberta-base-sentiment-latest` (CC BY 4.0), pinned to one commit.
+The data is from J. McAuley and J. Leskovec, "From amateurs to connoisseurs: modeling the evolution of user
+expertise through online reviews", WWW 2013, via SNAP. SNAP doesn't state a licence for this dataset, so the few
+review excerpts in the notebook aren't covered by this repo's licence. The model is
+`cardiffnlp/twitter-roberta-base-sentiment-latest` (CC BY 4.0), pinned to one commit. My code is MIT licensed.

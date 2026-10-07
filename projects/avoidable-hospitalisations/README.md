@@ -10,8 +10,8 @@ admissions. What I find more interesting is the leftover part: once you account 
 and access profile, which areas still have more (or fewer) admissions than you'd predict? Those are the places where
 something else is going on, good or bad.
 
-**Status:** models built and tested, and the interactive map is built. Publishing the map online is next. Every number in the results table below is generated
-from `reports/results.json` by `dap health train`, not typed in by hand, and a test fails if they drift apart.
+Every number in the results table below is written by `dap health train` from `reports/results.json`, not typed in
+by hand, and a test fails if they drift apart.
 
 ## The question
 
@@ -32,27 +32,27 @@ All of it is open data. The full list, with editions, licences and every check I
 
 The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 people. There are about 340 of them.
 
-## How I'm approaching it
+## How I did it
 
-- [x] **Find and check the data.** Download every candidate source, compare them, choose the area level, and decide
-  which columns the model is allowed to use. ([data.md](data.md))
-- [x] **Set up the project properly.** A Python package, a `dap` command line tool, a manifest that checks every
-  download, and tests for the leakage rules. ([LEARNINGS.md](../../LEARNINGS.md) has the details.)
-- [x] **Clean and join everything into one table per area, then explore it** with maps, and rates by remoteness and
-  disadvantage. ([notebook 01](notebooks/01_explore_the_data.ipynb))
-- [x] **Check whether neighbouring areas look alike** (spatial autocorrelation: Moran's I and hot spot maps). If they
-  do, an ordinary random train/test split will flatter the model. ([notebook 02](notebooks/02_spatial_models.ipynb))
-- [x] **Build models from simple to complex:** a national average, then averages by state and remoteness, then
-  ridge regression, a spatial lag model and LightGBM. Each one has to beat the simpler ones to be worth it.
-- [x] **Validate with spatial cross-validation.** Whole regions (SA4s) are held out together, compared with a random
-  split to show how much neighbouring areas inflate the score.
-- [x] **Map the residuals**, the "better or worse than expected" map, which is the main result.
-- [x] **Write it up** ([notebook 02](notebooks/02_spatial_models.ipynb) and the findings below).
-- [x] **Build an interactive map** (`uv run dap health report`), with each area's rate, its expected rate and the
-  hot and cold spots.
-- [ ] **Publish the map** so it can be viewed without running anything.
+- **Found and checked the data.** I downloaded every candidate source, compared them, chose the area level, and
+  decided which columns the model is allowed to use. All of that is in [data.md](data.md).
+- **Set the project up so someone else can run it.** It's a Python package with a `dap` command line tool, a
+  manifest that checks every download, and tests for the leakage rules. ([LEARNINGS.md](../../LEARNINGS.md) has the
+  details.)
+- **Cleaned and joined everything into one table per area, then explored it** with maps, and rates by remoteness
+  and disadvantage. ([notebook 01](notebooks/01_explore_the_data.ipynb))
+- **Checked whether neighbouring areas look alike** with Moran's I and hot spot maps. They do, which means an
+  ordinary random train/test split flatters the model. ([notebook 02](notebooks/02_spatial_models.ipynb))
+- **Built models from simple to complex:** a national average, then averages by state and remoteness, then ridge
+  regression, a spatial lag model and LightGBM. Each one had to beat the simpler ones to be worth it.
+- **Tested them with spatial cross-validation.** Whole regions (SA4s) are held out together, and I compared that
+  with a random split to show how much neighbouring areas inflate the score.
+- **Mapped the residuals**, the "better or worse than expected" map, which is the main result.
+- **Built an interactive map** (`uv run dap health report`), with each area's rate, its expected rate and the hot
+  and cold spots. It's committed at `reports/map/index.html`, so you can download it and open it in a browser
+  without running anything. I'll put it on GitHub Pages once the rebuild is merged.
 
-## What I've found so far
+## What I found
 
 ![Map of SA3s coloured by how far their observed preventable hospitalisation rate sits above or below the rate LightGBM expected from their profile, with insets for Sydney, Melbourne, Brisbane and Perth](../../reports/figures/02_residual_map.png)
 
@@ -117,10 +117,11 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   to *more* admissions.
 - **Fairfield in Sydney stands out.** It's one of the most disadvantaged areas in the country, but its rate is below
   the national median. More than half its residents were born in non-English-speaking countries, which fits what
-  researchers call the "healthy migrant effect". I'll see whether the residual map picks it out.
+  researchers call the "healthy migrant effect". The residual map does pick it out: Fairfield is one of the ten
+  SA3s furthest below its expected rate (the full list is in `reports/results.json`).
 - **COVID shifted the level, not the pattern.** Rates dipped nationally, but the ranking of areas before and after is
   very similar, so using 2023-24 is safe.
-- **The rate is very skewed,** with a few remote areas far above the rest, so I'll model the log of the rate.
+- **The rate is very skewed,** with a few remote areas far above the rest, so I modelled the log of the rate.
 
 ### From checking the sources ([data.md](data.md))
 
@@ -139,10 +140,10 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   because the spatial cross-validation holds out whole SA4s at a time.
 - **Some of the most remote areas have no published rate.** The AIHW suppresses rates for areas with very small numbers.
   Most of those are near-empty areas, but a few are remote Northern Territory and Pilbara regions that probably have
-  some of the highest rates in the country. The model never sees them, so it will be weakest exactly where need is
-  highest. I'll keep coming back to that in the write-up.
+  some of the highest rates in the country. The model never sees them, so it's weakest exactly where need is
+  highest.
 
-## Limitations I already know about
+## Limitations
 
 - This is area-level data, so it describes places, not people. An area with high admissions doesn't mean any
   particular person there had a worse experience.
@@ -157,4 +158,17 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 
 ## Run it
 
-See [Reproduce it yourself](../../README.md#reproduce-it-yourself) in the main README.
+```
+uv run dap health fetch     # about 210 MB from the AIHW, ABS and PHIDU, checked against data/manifest.yaml
+uv run dap health build     # one cleaned table with a row per SA3
+uv run dap health train     # spatial stats, every model under both kinds of CV, results.json and the figures
+uv run dap health report    # the interactive map at reports/map/index.html
+```
+
+There's more detail in [Running it step by step](../../README.md#running-it-step-by-step) in the main README.
+
+## Licence
+
+The code is MIT licensed. Anything derived from PHIDU data (the cleaned table, figures, maps and
+`reports/results.json`) is shared under CC BY-NC-SA 3.0 AU, as PHIDU's licence requires. The sources and their
+licences are listed in [data.md](data.md#licences-and-attribution).

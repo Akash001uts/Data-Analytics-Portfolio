@@ -1,7 +1,7 @@
-# Data manifest for the health flagship.
+# Data manifest for the avoidable hospital admissions project.
 # Raw files are never committed. `dap health fetch` downloads each entry to data/raw/<id>/<file>,
 # checks bytes and sha256, and fails with an "upstream changed" error on a mismatch.
-# Recorded 2026-10-06 during Phase 0; PHIDU entries re-pinned 2026-10-07 to the September 2026 release.
+# Recorded 2026-10-06 when I first checked the sources; PHIDU entries re-pinned 2026-10-07 to the September 2026 release.
 # See projects/avoidable-hospitalisations/data.md for how each source is used.
 
 version: 1
@@ -20,7 +20,7 @@ sources:
     # The 2026 zip was not archived as of 2026-10-06 (that URL returned HTTP 500). Once it appears, add it here
     # as fallback_url and confirm its contents match the sha256 below.
     file: phidu_data_pha_aust.xlsx
-    # Phase 0 recon on 2026-10-06 was served a stale June 2026 copy (69,229,030 bytes); the server has
+    # My first download on 2026-10-06 was served a stale June 2026 copy (69,229,030 bytes); the server has
     # served this September 2026 release consistently since 2026-10-07.
     bytes: 69976812
     sha256: 0af57cb8260fa1fb724665c4b41c91efe6346a363419d4ae70f3ad88c1c89206

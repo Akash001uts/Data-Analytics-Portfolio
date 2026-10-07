@@ -157,3 +157,13 @@ This turned out to be the most important decision so far.
   passed, because none of its example texts mentioned stars. I fixed the regex and added a test text that does.
 - **Read the mistakes.** Some one-star reviews praise the food and complain about the price, and one reads like a
   five-star review with the wrong rating. No model can get that kind right, so a perfect score isn't possible.
+
+## Tidying up the write-up (7 Oct 2026)
+
+- **Read your outputs like a stranger would.** Going back over everything as one piece, I found the interactive
+  map's footer said its licence was CC BY-NC-SA 4.0, while the READMEs and data notes all said 3.0 AU, which is
+  what PHIDU actually uses. Nothing tested the map's footer text, so it had been wrong since I built it. Now a
+  test checks it against the licence in the data manifest.
+- **Write it up as what you did, not what you're going to do.** A lot of my README text was still in the future
+  tense from when I was planning ("I'll model the log of the rate", a checklist of steps). Once the work's done,
+  that reads like it isn't.

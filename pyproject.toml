@@ -23,6 +23,10 @@ dependencies = [
     "vadersentiment>=3.3.2",
 ]
 
+[project.urls]
+Repository = "https://github.com/Akash001uts/Data-Analytics-Portfolio"
+Issues = "https://github.com/Akash001uts/Data-Analytics-Portfolio/issues"
+
 [project.scripts]
 dap = "dap.cli:main"
 

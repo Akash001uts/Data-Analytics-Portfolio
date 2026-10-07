@@ -5,16 +5,70 @@
 I'm a uni student studying data analytics, and this is where I keep my data projects. The first version of this
 repo had three projects I made while I was learning: customer segmentation, sentiment analysis and an LSTM stock
 forecast. Looking back at them, they mostly followed well-known tutorials, they didn't report proper metrics, and a
-couple of them had real bugs. So I'm rebuilding it around projects where I ask my own question, use real open data,
-and check my work properly. The old version is still at the [`v1-coursework`](https://github.com/Akash001uts/Data-Analytics-Portfolio/tree/v1-coursework)
+couple of them had real bugs. So I rebuilt it around projects where I ask my own question, use real open data, and
+check my work properly. The old version is still at the [`v1-coursework`](https://github.com/Akash001uts/Data-Analytics-Portfolio/tree/v1-coursework)
 tag if you want to see where I started.
 
 | Project | The question | Status |
 | --- | --- | --- |
-| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Models, residual map and interactive map done |
-| [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Done: a simple model trained on reviews beat the transformer |
+| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Done, with an interactive map |
+| [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Done |
 
-## What I've learnt so far
+## Quick start
+
+```
+git clone --branch rebuild https://github.com/Akash001uts/Data-Analytics-Portfolio.git
+cd Data-Analytics-Portfolio
+uv sync
+uv run pytest
+```
+
+You need [uv](https://docs.astral.sh/uv/), which installs Python and all the packages for you. The tests run on
+small made-up data, so they work straight away. To run the projects on the real data, see
+[Running it step by step](#running-it-step-by-step) below, or open the repo in a Codespace and skip the setup:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Akash001uts/Data-Analytics-Portfolio?ref=rebuild)
+
+## Avoidable hospital admissions
+
+Some hospital admissions are for things good care outside hospital can often prevent, like diabetes complications
+or a COPD flare-up. The rate varies a lot across Australia, but most of that is expected: older, poorer and more
+remote areas have more admissions. I wanted to find the areas that are still higher or lower than their profile
+predicts, because those are the places where something else is going on.
+
+![Map of SA3s coloured by how far their observed preventable hospitalisation rate sits above or below the rate LightGBM expected from their profile](reports/figures/02_residual_map.png)
+
+**Why it's interesting:** neighbouring areas have very similar rates, so a normal random train/test split lets a
+model peek at the answer through the neighbours. I tested every model twice, once with random folds and once
+holding out whole regions, and the gap between the two was the most useful thing I found. A spatial lag model that
+looked best when fitted on everything turned out to rely mostly on knowing its neighbours' rates.
+
+What I found:
+
+- A simple baseline (state and remoteness) gets a fair way. LightGBM does best, but by less than I expected.
+- Maryborough in Queensland is the biggest surprise, at roughly double what its profile predicts, and it's been
+  high in every year of the data.
+- The leftover errors lean by state, even though no model was told the state.
+
+The full write-up, with the results table, is in the [project README](projects/avoidable-hospitalisations).
+`uv run dap health report` builds an interactive version of the map that you can open in any browser.
+
+## Sentiment analysis, redone
+
+My first sentiment project said a RoBERTa transformer was "clearly" better than VADER without calculating a
+single score. This time I measured it: four models on the same 10,000 held-out Amazon food reviews, with macro-F1
+and paired bootstrap intervals, after removing duplicate reviews and splitting by reviewer.
+
+![Macro-F1 for each sentiment model with 95% bootstrap intervals](reports/sentiment/figures/01_macro_f1.png)
+
+**Why it's interesting:** my old claim turned out to be right, but only half the story. RoBERTa does beat VADER,
+and the interval for the difference is well clear of zero. But a plain TF-IDF and logistic regression model trained
+on the reviews beats RoBERTa, which was trained on tweets and used as is. Accuracy would have told the wrong story
+too, because nearly four in five reviews are positive.
+
+The full write-up is in the [project README](projects/sentiment-analysis).
+
+## What I've learnt
 
 I keep a running log in [LEARNINGS.md](LEARNINGS.md). The short version:
 
@@ -28,42 +82,15 @@ I keep a running log in [LEARNINGS.md](LEARNINGS.md). The short version:
 - **Look at the rows, not just the headers.** The spreadsheets had fake "areas" mixed in with the real ones, which I
   only found when I made a test count the rows.
 - **Neighbours give the answer away.** Areas next to each other have very similar rates, so a random train/test
-  split made every model look better than it is. Holding out whole regions at a time gave more honest scores, and
-  showed that a spatial lag model, which looked great when fitted on everything, mostly relied on knowing its
-  neighbours' rates.
-- **Measure the claim you're making.** My first sentiment project said a transformer was "clearly" better than
-  VADER without a single score. Measured properly, it is better than VADER, but a plain TF-IDF model trained on
-  the reviews beats them both.
+  split made every model look better than it is. Holding out whole regions at a time gave more honest scores.
+- **Measure the claim you're making.** Measured properly, RoBERTa is better than VADER, but a plain TF-IDF model
+  trained on the reviews beats them both.
 
-## How the repo is laid out
-
-```
-projects/
-  avoidable-hospitalisations/   the question, approach, findings so far, and data.md (every source and check)
-  sentiment-analysis/           the rebuilt sentiment evaluation, with its notebook
-src/dap/                        the shared Python code, so tests and notebooks can import it
-  common/                       file paths, seeds, and the data manifest checker
-  health/                       downloading, cleaning, the feature allowlist, spatial stats, models and CV
-  sentiment/                    parsing and deduping the reviews, VADER, TF-IDF, the RoBERTa cache, evaluation
-tests/                          pytest tests, plus tiny made-up data in tests/fixtures
-data/manifest.yaml              where every data file comes from, with its size and SHA256 (the data itself isn't in git)
-LEARNINGS.md                    what I've learnt and got wrong along the way
-```
-
-## Reproduce it yourself
+## Running it step by step
 
 Everything here runs on a normal laptop, with no GPU and no accounts to sign up for. All the data is public.
 
-### Option 1: run it in your browser
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Akash001uts/Data-Analytics-Portfolio?ref=rebuild)
-
-This opens the repo in a GitHub Codespace (free for personal accounts, within GitHub's monthly limit). It installs
-everything for you. When it's ready, run the commands from step 3 below in its terminal.
-
-### Option 2: run it on your own machine
-
-1. **Install uv**, which handles Python and all the packages for you. On Windows (PowerShell):
+1. **Install uv.** On Windows (PowerShell):
 
    ```
    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
@@ -93,11 +120,14 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    uv run pytest
    ```
 
-   These run on small made-up data in `tests/fixtures`, so they take a couple of seconds. They check that the data
-   manifest is complete, that downloads get verified, and that the feature allowlist blocks anything that would leak
-   the answer into the model. A few tests say "skipped" because they need the real data, which comes next.
+   These run on small made-up data in `tests/fixtures`, so they take a few seconds. They check that the data
+   manifest is complete, that downloads get verified, and that nothing leaks the answer into a model: the feature
+   allowlist blocks anything hospital-related, no SA4 ends up in both training and test folds, scalers only see
+   training rows, and changing the test areas' rates doesn't change any prediction. For the sentiment project they
+   check that duplicate reviews are removed before splitting and that no reviewer or review text crosses splits. A
+   few tests say "skipped" because they need the real data, which comes next.
 
-4. **Download the real data.**
+4. **Download the health data.**
 
    ```
    uv run dap health fetch
@@ -114,17 +144,9 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    ```
 
    This cleans and joins everything into one table with a row per SA3 (`data/processed/health_sa3.gpkg`) and writes a
-   small summary to `reports/data_summary.json`. It takes about a minute. With the data downloaded, `uv run pytest`
-   also runs the full build and checks the result.
+   small summary to `reports/data_summary.json`. It takes about a minute.
 
-6. **Open the notebooks.** They're already run, so you can read them on GitHub. To run them yourself:
-
-   ```
-   uv sync --group notebooks
-   uv run jupyter lab projects/avoidable-hospitalisations/notebooks
-   ```
-
-7. **Fit the models.**
+6. **Fit the models.**
 
    ```
    uv run dap health train
@@ -134,7 +156,7 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    writes `reports/results.json`, the figures in `reports/figures/02_*.png`, and the results table in the project
    README. The per-area predictions go to `data/processed/health_sa3_results.gpkg`.
 
-8. **Make the interactive map.**
+7. **Make the interactive map.**
 
    ```
    uv run dap health report
@@ -144,7 +166,7 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    with its expected rate, the admission rate itself, and the hot and cold spots, with a zoom button for each
    capital city.
 
-9. **The sentiment project.**
+8. **The sentiment project.**
 
    ```
    uv run dap sentiment fetch
@@ -155,6 +177,16 @@ everything for you. When it's ready, run the commands from step 3 below in its t
    VADER and TF-IDF, and scores every model on the same 10,000 reviews (about 5 minutes). RoBERTa's predictions
    come from a committed cache, so you don't need PyTorch. To re-run RoBERTa itself: `uv sync --group nlp`, then
    `uv run dap sentiment transformer` (about 25 minutes on a laptop CPU).
+
+9. **Open the notebooks.** They're already run, so you can read them on GitHub. To run them yourself:
+
+   ```
+   uv sync --group notebooks
+   uv run jupyter lab projects
+   ```
+
+   The health notebooks are in `projects/avoidable-hospitalisations/notebooks` and the sentiment one is in
+   `projects/sentiment-analysis/notebooks`.
 
 ### If something goes wrong
 
@@ -168,18 +200,54 @@ everything for you. When it's ready, run the commands from step 3 below in its t
   large downloads can get in the way. Try another network, or download a single source with
   `uv run dap health fetch --only aihw_pph_sa3`.
 
+## How the repo is laid out
+
+```
+projects/
+  avoidable-hospitalisations/   the write-up, notebooks, and data.md (every source and check)
+  sentiment-analysis/           the write-up and its notebook
+src/dap/                        the shared Python code, so tests and notebooks can import it
+  common/                       file paths, seeds, and the data manifest checker
+  health/                       downloading, cleaning, the feature allowlist, spatial stats, models and CV
+  sentiment/                    parsing and deduping the reviews, VADER, TF-IDF, the RoBERTa cache, evaluation
+tests/                          pytest tests, plus tiny made-up data in tests/fixtures
+data/manifest.yaml              where every health data file comes from, with its size and SHA256 (the data itself isn't in git)
+data/sentiment_manifest.yaml    the same for the review data
+reports/                        generated outputs: results.json, figures, the interactive map, the RoBERTa cache
+LEARNINGS.md                    what I've learnt and got wrong along the way
+```
+
+## Notes
+
+Every number in the project READMEs' results tables is written by the code from `results.json`, not typed in by
+hand, and a test fails if they drift apart. There are probably still rough edges, so if something breaks or you
+spot a mistake, feel free to [open an issue](https://github.com/Akash001uts/Data-Analytics-Portfolio/issues).
+
+This is a personal student project and isn't affiliated with or endorsed by any of the data publishers.
+
 ## Data and credits
 
-The data comes from the Australian Institute of Health and Welfare (AIHW), the Australian Bureau of Statistics (ABS)
-and the Public Health Information Development Unit (PHIDU) at Torrens University Australia. Every source, its edition
-and its licence is listed in [the project's data notes](projects/avoidable-hospitalisations/data.md).
+The health data comes from the Australian Institute of Health and Welfare (AIHW), including its MyHospitals API, the
+Australian Bureau of Statistics (ABS) and the Public Health Information Development Unit (PHIDU) at Torrens University
+Australia. Every source, its edition and its licence is listed in
+[the project's data notes](projects/avoidable-hospitalisations/data.md) and in `data/manifest.yaml`.
 
 Based on Public Health Information Development Unit (PHIDU), Torrens University Australia material from: Social Health
-Atlas of Australia: Population Health Areas (online) 2026. AIHW and ABS material is used under CC BY 4.0.
+Atlas of Australia: Population Health Areas (online) 2026. AIHW and ABS material is used under CC BY 4.0, and
+MyHospitals data under CC BY 3.0 (as its API states).
+
+The review data is the Amazon Fine Food Reviews dataset from the Stanford Network Analysis Project (SNAP):
+J. McAuley and J. Leskovec, "From amateurs to connoisseurs: modeling the evolution of user expertise through online
+reviews", WWW 2013. The transformer is CardiffNLP's
+[`twitter-roberta-base-sentiment-latest`](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest)
+(CC BY 4.0), pinned to one commit.
 
 ## Licence
 
 The code is MIT licensed. Anything derived from PHIDU data (tables, figures, maps and results) is shared under
 CC BY-NC-SA 3.0 AU, as PHIDU's licence requires, so it's for non-commercial use.
 
-This is a personal student project and isn't affiliated with or endorsed by any of the data publishers.
+The sentiment notebook quotes a few short review excerpts from the SNAP dataset. SNAP doesn't state a licence for it,
+so those excerpts aren't covered by the MIT licence. They're only there to show where the models go wrong, and the
+dataset is cited above. The committed RoBERTa predictions (review IDs and probabilities, no text) come from a CC BY
+4.0 model.

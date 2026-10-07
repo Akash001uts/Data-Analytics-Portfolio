@@ -3,7 +3,7 @@
 This is the detailed version of the data side of the project: every source I use, why I picked it, and every check I
 ran before building anything. If you just want the overview, start with the [project README](README.md).
 Every file is listed with its URL, size and SHA256 in [`data/manifest.yaml`](../../data/manifest.yaml).
-No raw data is committed; `dap health fetch` downloads and verifies it.
+None of the raw data is in git. `dap health fetch` downloads it and checks it.
 
 The checks below were first run on 6 October 2026. PHIDU published a September 2026 release the same
 week, so I re-pinned it on 7 October and re-ran every PHIDU-based number: none of them changed.
@@ -13,10 +13,10 @@ week, so I re-pinned it on 7 October and re-ran every PHIDU-based number: none o
 Which areas of Australia have more potentially preventable hospitalisations (PPH) than their social, demographic
 and access profile predicts?
 
-## Unit of analysis: SA3, not PHA
+## Why SA3 and not PHA
 
-I model at **Statistical Area Level 3 (SA3, ASGS 2021)**. The finer Population Health Areas (PHAs) are used only for a
-descriptive map.
+I model at **Statistical Area Level 3 (SA3, ASGS 2021)**. I only use the finer Population Health Areas (PHAs) for
+one descriptive map.
 
 | | PHA (PHIDU Social Health Atlas) | SA3 (AIHW HPF 76) |
 |---|---|---|
@@ -26,25 +26,25 @@ descriptive map.
 | Suppressed (all PPH) | 7 | 9 of 336 in 2023-24 |
 | Licence | CC BY-NC-SA 3.0 AU | CC BY 4.0 |
 
-Three findings decided it:
+Three things decided it for me:
 
 1. **The PHA target is public hospitals only, and the gap tracks private health insurance.** PHIDU also publishes SA3
    totals, so I compared its public-only 2020/21 rate with AIHW's all-hospital 2020-21 rate for the 319 SA3s where both
    are published. They agree closely (Pearson r = 0.96, Spearman 0.90), but the public share of PPH falls from a median of
    0.94 in the least-insured fifth of SA3s to 0.67 in the most-insured fifth (r = -0.68 with the percentage of adults
    holding private cover). A residual map built on the public-only rate would partly be a map of private insurance,
-   which would undermine the headline result. The ratio is not a pure public share: it exceeds 1 in 22 SA3s, so the two
+   which would undermine the main result. The ratio isn't a pure public share, though: it exceeds 1 in 22 SA3s, so the two
    extracts also differ in other ways (PHIDU's errata re-release, AIHW's SA2 2016 to 2021 mapping), but the gradient
-   with insurance is far larger than that noise.
+   with insurance is much bigger than that noise.
 2. **2020/21 is a COVID year.** The national age-standardised PPH rate was 2,735 per 100,000 in 2018-19, 2,371 in
    2020-21 and 2,617 in 2023-24. Vaccine-preventable admissions fell from 245 to 101 and had recovered to 252 by
-   2023-24. AIHW lets me use 2023-24 and check against pre-COVID 2018-19.
+   2023-24. The AIHW data lets me use 2023-24 and check it against pre-COVID 2018-19.
 3. **GP use only exists at SA3.** The current PHIDU release has no GP or Medicare indicator at any level, so the only
    GP-use data is AIHW PHC 19, which is published by SA3.
 
-The cost is sample size: 327 SA3s with a published 2023-24 rate, against about 1,158 PHAs. That is enough for the linear
-and spatial-lag models. LightGBM will be shallow and regularised, and I will report its spatial-CV score rather than
-assume it wins.
+The cost is sample size: 327 SA3s with a published 2023-24 rate, against about 1,158 PHAs. That's enough for the
+linear and spatial lag models. For LightGBM I kept the trees shallow and regularised, and judged it on its
+spatial CV score instead of assuming it would win.
 
 ### Nesting and CV groups
 
@@ -59,18 +59,19 @@ Spatial cross-validation groups SA3s by SA4.
 - The 23 ABS SA2s missing from the concordance are 18 non-spatial codes (migratory and no usual address, two for each
   state and territory), "Outside Australia", and the 4 Other Territories SA2s (Christmas Island, Cocos (Keeling) Islands,
   Jervis Bay, Norfolk Island). AIHW publishes those 4 as SA3s 90101 to 90104, but PHIDU has no features for them, so
-  they are dropped.
+  I dropped them.
 - That leaves 336 SA3s in 88 SA4s, and 327 SA3s with a target, which gives a median of 3 SA3s per SA4 (range 1 to 10).
-  State-level GroupKFold (8 groups) is the harsher second check.
+  Holding out whole states (8 groups) would be an even harsher check, which I haven't run.
 
-### Suppression is not random
+### The missing areas aren't random
 
 The 9 SA3s without a 2023-24 rate are Illawarra Catchment Reserve, Lord Howe Island, Blue Mountains - South,
 West Pilbara, Barkly, East Arnhem, Canberra East, Molonglo and Uriarra - Namadgi. Some are near-empty areas, but
 Barkly, East Arnhem and West Pilbara are remote areas with very high rates: PHIDU's public-only 2020/21 SA3 figures
 are about 18,600 (Barkly), 11,300 (East Arnhem) and 3,100 (West Pilbara) per 100,000, against an SA3 median of about
-1,900. I drop them from training and
-evaluation and say so in the limitations, because the model never sees the most remote part of the distribution.
+1,900. I had to drop them from
+training and testing, and I list it as a limitation, because the model never sees the most remote part of the
+distribution.
 
 ## Sources
 
@@ -94,24 +95,24 @@ The AIHW **Total PPH, all persons, age-standardised rate per 100,000, 2023-24**,
 resident population. Sensitivity checks use 2018-19 (pre-COVID) and the chronic and acute subtotals.
 
 AIHW suppresses a rate when the count is 1 to 4 or the population is under 300 (confidentiality), and when the count is
-under 20 or the population under 2,500 (volatility). The smallest published 2023-24 SA3 count is 204, so every SA3 that
-is kept has a stable rate. AIHW recorded residence on SA2 2016 up to 2021-22 and mapped it to SA2 2021, so the 2018-19
+under 20 or the population under 2,500 (volatility). The smallest published 2023-24 SA3 count is 204, so every SA3 I
+keep has a stable rate. AIHW recorded residence on SA2 2016 up to 2021-22 and mapped it to SA2 2021, so the 2018-19
 check carries a small boundary-mapping error. AIHW also notes that some ACT private hospitals are missing before
-2019-20, so ACT SA3s are left out of the 2018-19 check.
+2019-20, so I left the ACT SA3s out of the 2018-19 check.
 
 ### Things to know about each source
 
 - **PHIDU workbook.** Each sheet lists the 1,165 PHAs first, then an `AUSTRALIA+` row, then state, SA4 and SA3 totals.
-  Thirty PHA codes are also SA3 codes (both are five digits), so the parser must split on the `AUSTRALIA+` row and not
+  Thirty PHA codes are also SA3 codes (both are five digits), so my parser splits on the `AUSTRALIA+` row, not
   on code length. Each state also has a pseudo-area coded `<state>9999` ("ABS cell adjustment" in
-  Census sheets, "Unknown <state>" in admissions sheets), which the parser sets aside. Values use `#` (population under 100), `..` (not applicable), `n.p.` and `n.a.`, and all of these
+  Census sheets, "Unknown <state>" in admissions sheets), which my parser sets aside. Values use `#` (population under 100), `..` (not applicable), `n.p.` and `n.a.`, and all of these
   become missing. The `/current/` URL is overwritten at each release, so the fetch fails loudly on a checksum mismatch;
   archived releases are kept as yearly zips.
 - **PHIDU PPH (PHA map only).** It covers public hospitals only, for 2020/21, re-released in December 2025 after an
   error in the December 2023 data. Seven PHAs are unpublished. Vaccine-preventable PPH is too sparse to use at PHA level
   (237 unpublished, 552 PHAs with counts under 20).
 - **GP use.** Allocated by Medicare enrolment postcode rather than SA2, with 10 SA3s unpublished. "Services per 100
-  people" is crude, not age-standardised, at SA3, so I control for age structure separately.
+  people" is crude, not age-standardised, at SA3, so I checked age structure separately.
 - **Remoteness.** For each SA3: the population share in each Remoteness Area, built from the SA1 to RA allocation and
   SA1 usual resident population. SA1s that SEIFA doesn't score (usually because very few people live there) carry no
   weight. By count, a median 97% of each SA3's SA1s are matched, and the lowest is East Pilbara at 75%, so the shares
@@ -124,11 +125,11 @@ check carries a small boundary-mapping error. AIHW also notes that some ACT priv
 
 ## Feature allowlist
 
-Features are an explicit allowlist of (sheet, indicator) pairs from the PHIDU SA3 rows, plus the derived access
-features. Anything not on the list cannot reach a model. `src/dap/health/features.py` holds the list, and
+The model inputs are an explicit allowlist of (sheet, indicator) pairs from the PHIDU SA3 rows, plus the access
+features I worked out myself. Anything that isn't on the list can't reach a model. `src/dap/health/features.py` holds the list, and
 `tests/test_features.py` and `tests/test_allowlist_workbook.py` enforce the rules below. The second test
-also checks that every PHIDU feature resolves to exactly one column of the real workbook, so a renamed
-sheet or relabelled column in a future release fails loudly.
+also checks that every PHIDU feature resolves to exactly one column of the real workbook, so if a future
+release renames a sheet or relabels a column, the test fails instead of the model quietly losing an input.
 
 ### Rules the tests enforce
 
@@ -166,12 +167,12 @@ sheet or relabelled column in a future release fails loudly.
 | | `Screening` | Bowel screening participation (persons); breast screening participation | 2022 and 2023 |
 | | `Mothers_babies` | % women with no antenatal visit in the first 10 weeks | 2021 to 2023 |
 
-Private health insurance stays in because it plausibly changes where and whether people are admitted, and with an
-all-hospitals target that is a real effect rather than a reporting artefact. I will still report results with and
-without it.
+I kept private health insurance in because it plausibly changes where and whether people are admitted, and with an
+all-hospitals target that's a real effect, not a reporting artefact. I also ran the models without it, and the
+results are in the sensitivity checks in [notebook 02](notebooks/02_spatial_models.ipynb).
 
-The prevention group goes slightly beyond the plan's list (socioeconomic, demographic, access, GP use, distance). I
-include it because it measures primary care reach, not hospital use.
+The prevention group goes a bit beyond what I first planned to use (socioeconomic, demographic, access, GP use and
+distance). I added it because it measures how far primary care reaches, not hospital use.
 
 ### Tier B: health status (sensitivity only, off by default)
 
@@ -185,9 +186,9 @@ reader matches a feature's title against either header row and insists on exactl
 estimates aren't published for 20 SA3s (13 of them have a target, mostly remote), so the Tier B check runs on fewer
 areas, and leaves out some of the highest-rate ones.
 
-These sit on the causal path. A high chronic disease prevalence explains chronic PPH without saying anything about
-primary care, and PHIDU's modelled estimates are themselves predicted from socio-demographic data, so they would
-double-count Tier A. I report a Tier A + B model as a sensitivity check only.
+I left these out of the main model because they sit on the causal path. Lots of chronic disease explains chronic
+PPH without saying anything about primary care, and PHIDU's modelled estimates are themselves predicted from
+socio-demographic data, so they'd double-count Tier A. I only use a Tier A + B model as a sensitivity check.
 
 ### Excluded
 
@@ -203,7 +204,7 @@ double-count Tier A. I report a Tier A + B model as a sensitivity check only.
 ### Timing
 
 Most features describe 2021 (Census). Income support and labour force are June 2025, slightly after the 2023-24
-target year. I treat all of them as slow-moving area characteristics and list the mismatch as a limitation. GP use
+target year. I treat all of them as things about an area that change slowly, and list the mismatch as a limitation. GP use
 comes from the same year as the target.
 
 ## Licences and attribution
@@ -217,10 +218,10 @@ comes from the same year as the target.
 - AIHW data tables are CC BY 4.0 (aihw.gov.au/copyright). The MyHospitals API states CC BY 3.0 in its own metadata.
 - ABS boundaries, allocation files and SEIFA are CC BY 4.0.
 
-## Limitations to carry into the report
+## Limitations
 
-- Ecological data: results describe areas, not patients.
-- Suppressed SA3s are not missing at random and include remote high-need areas.
+- It's area-level data, so the results describe areas, not patients.
+- The suppressed SA3s aren't missing at random, and they include remote areas with high need.
 - ED distance only covers hospitals in the national ED collection.
 - Feature years range from 2021 to 2025 against a 2023-24 target.
 - GP use is allocated by postcode, which only approximately matches SA3 boundaries.
