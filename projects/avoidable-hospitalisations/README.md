@@ -85,8 +85,9 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
 <!-- results:end -->
 
 - Neighbouring areas are very alike, so a random train/test split flatters every model that learns from the
-  data. Holding out whole SA4s takes a noticeable chunk off every score, and the most off LightGBM, the most
-  flexible model. If I'd only reported random folds, I'd have overstated how well it works.
+  data. Holding out whole SA4s takes a noticeable chunk off every score, and of the models without a state term
+  it takes the most off LightGBM, the most flexible one. If I'd only reported random folds, I'd have overstated how
+  well it works.
 - A simple baseline goes a long way. Knowing just the state and how remote an area is explains a fair share of
   the variation. All the features and boosted trees add to that, but not by as much as I expected.
 - Which model is "best" depends on the scale. Ridge regression does best on the log scale but is unstable on

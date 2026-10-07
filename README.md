@@ -52,7 +52,8 @@ What I found:
   lifts it further, but the NT and ACT still sit above expected.
 
 The full write-up, with the results table, is in the [project README](projects/avoidable-hospitalisations).
-There's also an [interactive version of the map](https://akash001uts.github.io/Data-Analytics-Portfolio/) you can open in any browser. `uv run dap health report` rebuilds it.
+There's also an [interactive version of the map](https://akash001uts.github.io/Data-Analytics-Portfolio/) you
+can open in any browser. `uv run dap health report` rebuilds it.
 
 ## Sentiment analysis, redone
 
@@ -65,9 +66,9 @@ and paired bootstrap intervals, after removing duplicate reviews and splitting b
 **Why it's interesting:** my old claim turned out to be right, but only half the story. RoBERTa does beat VADER,
 and the interval for the difference is well clear of zero. But a plain TF-IDF and logistic regression model trained
 on the reviews beats RoBERTa, which was trained on tweets and used as is. Tuning or recalibrating RoBERTa's
-scores on validation barely helps, because its sense of "neutral" doesn't match a three-star rating. Fine-tuning a small transformer on the reviews closes most of that gap, which says the training data
-mattered more than the model. Accuracy would have told the wrong story too, because nearly four in five reviews are
-positive.
+scores on validation barely helps, because its sense of "neutral" doesn't match a three-star rating. Fine-tuning a
+small transformer on the reviews closes most of that gap, which says the training data mattered more than the
+model. Accuracy would have told the wrong story too, because nearly four in five reviews are positive.
 
 The full write-up is in the [project README](projects/sentiment-analysis).
 
@@ -155,7 +156,7 @@ Everything here runs on a normal laptop, with no GPU and no accounts to sign up 
    uv run dap health train
    ```
 
-   This runs the spatial statistics and every model under both kinds of cross-validation (about 40 seconds), then
+   This runs the spatial statistics and every model under both kinds of cross-validation (about 3 minutes), then
    writes `reports/results.json`, the figures in `reports/figures/02_*.png`, and the results table in the project
    README. The per-area predictions go to `data/processed/health_sa3_results.gpkg`.
 

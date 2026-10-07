@@ -123,26 +123,6 @@ This turned out to be the most important decision so far.
   notebook text against the outputs, and found two sentences that said more than the numbers did: one claimed both
   models agreed on features they didn't, and one said GP use didn't matter when after-hours GP visits did show up.
 
-## Adding a state term (7 Oct 2026)
-
-- **A random effect doesn't need a mixed-model library.** I wanted each state to get its own intercept, shrunk
-  towards zero when a state has little data. statsmodels' mixed models don't take case weights, and every other
-  model here is weighted by population, so I wrote the shrinkage myself: each state's mean residual times
-  n / (n + k), with k estimated from how much the states differ compared with the noise inside them. It's one short
-  class and it wraps any of my models.
-- **Training residuals lie about what's left over.** My first idea was to fit LightGBM and then average its
-  residuals by state. But LightGBM fits its training areas closely, so those residuals are too small and the state
-  offsets would come out too small as well. I get the residuals from a cross-validation inside the training areas
-  instead (grouped by SA4 again), and a test checks they're bigger than the in-sample ones. I checked the tests
-  could fail too: a version using in-sample residuals and a version taking offsets from every area both got caught.
-- **Spatial CV decides which group effects can work at all.** An SA4 random effect would be useless here, because
-  the held-out SA4 is never in training. Even state only half works: the ACT is one SA4, so it's never seen when
-  it's tested, and the NT has two. The term evened out the big states, but the two territories still sit above
-  expected.
-- **The same idea can help one model and hurt another.** The state intercept was a clear win for LightGBM but made
-  ridge worse on the rate scale, because it stacks on top of ridge's extrapolation in the NT. I only spotted that
-  because I report both scales.
-
 ## Making the interactive map (7 Oct 2026)
 
 - **Map files get big fast.** My first version of the page was 3.3 MB, almost all of it coastline: the Kimberley
@@ -178,6 +158,36 @@ This turned out to be the most important decision so far.
 - **Read the mistakes.** Some one-star reviews praise the food and complain about the price, and one reads like a
   five-star review with the wrong rating. No model can get that kind right, so a perfect score isn't possible.
 
+## Tidying up the write-up (7 Oct 2026)
+
+- **Read your outputs like a stranger would.** Going back over everything as one piece, I found the interactive
+  map's footer said its licence was CC BY-NC-SA 4.0, while the READMEs and data notes all said 3.0 AU, which is
+  PHIDU's own licence. Nothing tested the map's footer text, so the two had disagreed since I built it. Now a
+  test checks it against the licence in the data manifest.
+- **Write it up as what you did, not what you're going to do.** A lot of my README text was still in the future
+  tense from when I was planning ("I'll model the log of the rate", a checklist of steps). Once the work's done,
+  that reads like it isn't.
+
+## Adding a state term (7 Oct 2026)
+
+- **A random effect doesn't need a mixed-model library.** I wanted each state to get its own intercept, shrunk
+  towards zero when a state has little data. statsmodels' mixed models don't take case weights, and every other
+  model here is weighted by population, so I wrote the shrinkage myself: each state's mean residual times
+  n / (n + k), with k estimated from how much the states differ compared with the noise inside them. It's one short
+  class and it wraps any of my models.
+- **Training residuals lie about what's left over.** My first idea was to fit LightGBM and then average its
+  residuals by state. But LightGBM fits its training areas closely, so those residuals are too small and the state
+  offsets would come out too small as well. I get the residuals from a cross-validation inside the training areas
+  instead (grouped by SA4 again), and a test checks they're bigger than the in-sample ones. I checked the tests
+  could fail too: a version using in-sample residuals and a version taking offsets from every area both got caught.
+- **Spatial CV decides which group effects can work at all.** An SA4 random effect would be useless here, because
+  the held-out SA4 is never in training. Even state only half works: the ACT is one SA4, so it's never seen when
+  it's tested, and the NT has two. The term evened out the big states, but the two territories still sit above
+  expected.
+- **The same idea can help one model and hurt another.** The state intercept was a clear win for LightGBM but made
+  ridge worse on the rate scale, because it stacks on top of ridge's extrapolation in the NT. I only spotted that
+  because I report both scales.
+
 ## Tuning RoBERTa's decision rule (7 Oct 2026)
 
 - **Give every model the same chance.** I'd tuned VADER's thresholds on validation but used RoBERTa's plain
@@ -200,16 +210,6 @@ This turned out to be the most important decision so far.
 - **Test that tuning can't see the test set.** The test scrambles the test reviewers' labels and RoBERTa outputs and
   checks the tuned rule doesn't move. It also checks that tuning on those scrambled rows would give a different
   rule, so the test would actually catch a leak.
-
-## Tidying up the write-up (7 Oct 2026)
-
-- **Read your outputs like a stranger would.** Going back over everything as one piece, I found the interactive
-  map's footer said its licence was CC BY-NC-SA 4.0, while the READMEs and data notes all said 3.0 AU, which is
-  PHIDU's own licence. Nothing tested the map's footer text, so the two had disagreed since I built it. Now a
-  test checks it against the licence in the data manifest.
-- **Write it up as what you did, not what you're going to do.** A lot of my README text was still in the future
-  tense from when I was planning ("I'll model the log of the rate", a checklist of steps). Once the work's done,
-  that reads like it isn't.
 
 ## Fine-tuning a transformer on the reviews (7 Oct 2026)
 
