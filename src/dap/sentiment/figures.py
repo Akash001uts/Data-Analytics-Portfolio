@@ -17,19 +17,20 @@ from dap.common.plotting import (
 )
 from dap.sentiment.evaluate import LENGTH_LABELS
 
-# The two VADER variants share a hue (light and dark blue); the other models get their own colour.
+# The two VADER variants share a hue (light and dark blue), as do the two RoBERTa rules (green).
 COLOURS = {
     "vader_default": BLUE_RAMP[2],
     "vader_tuned": CATEGORICAL[0],
     "tfidf_logistic": CATEGORICAL[1],
     "roberta": CATEGORICAL[2],
+    "roberta_tuned": "#117a53",  # a darker green, so the two RoBERTa rules read as a pair
 }
 
 
 def macro_f1_chart(results: dict) -> plt.Figure:
     models = results["models"]
     names = list(COLOURS)[::-1]
-    fig, ax = plt.subplots(figsize=(7.5, 3.2))
+    fig, ax = plt.subplots(figsize=(7.5, 3.6))
     for y, m in enumerate(names):
         f1 = models[m]["macro_f1"]
         ax.errorbar(
@@ -61,7 +62,7 @@ def macro_f1_chart(results: dict) -> plt.Figure:
 
 def confusion_grid(results: dict) -> plt.Figure:
     cmap = LinearSegmentedColormap.from_list("blues", [SURFACE, *BLUE_RAMP])
-    fig, axes = plt.subplots(1, 4, figsize=(12, 3.4), sharey=True)
+    fig, axes = plt.subplots(1, len(COLOURS), figsize=(3 * len(COLOURS), 3.4), sharey=True)
     short = ["neg", "neu", "pos"]
     for ax, m in zip(axes, COLOURS, strict=True):
         cm = np.array(results["models"][m]["confusion"], dtype=float)

@@ -163,6 +163,78 @@ def test_roberta_labels_take_the_most_likely_class():
     assert list(M.roberta_labels(probs)) == ["negative", "neutral", "positive"]
 
 
+def test_roberta_offsets_shift_the_decision():
+    probs = pd.DataFrame({"p_negative": [0.5], "p_neutral": [0.3], "p_positive": [0.2]})
+    assert list(M.roberta_labels(probs, {"negative": 0.0, "neutral": 0.0})) == ["negative"]
+    # log(0.5 / 0.3) is about 0.51, so an offset of 0.6 tips it to neutral
+    assert list(M.roberta_labels(probs, {"neutral": 0.6})) == ["neutral"]
+
+
+def under_called_neutral(n: int, seed: int) -> tuple[pd.DataFrame, np.ndarray]:
+    """A model that under-calls neutral: true neutrals sit just behind positive."""
+    rng = np.random.default_rng(seed)
+    y = rng.choice(C.LABELS, n, p=[0.2, 0.2, 0.6])
+    p = rng.dirichlet([1, 1, 1], n) * 0.2
+    for i, lab in enumerate(y):
+        if lab == "negative":
+            p[i, 0] += 0.8
+        elif lab == "positive":
+            p[i, 2] += 0.8
+        else:
+            p[i, 1] += 0.35
+            p[i, 2] += 0.45
+    probs = pd.DataFrame(p / p.sum(1, keepdims=True), columns=[f"p_{c}" for c in C.LABELS])
+    return probs, y
+
+
+def test_roberta_rule_tuning_fixes_an_under_called_class():
+    probs, y = under_called_neutral(600, 0)
+    argmax_f1 = f1_score(y, M.roberta_labels(probs), average="macro", labels=list(C.LABELS))
+    offsets, f1 = M.tune_roberta(probs, y)
+    assert offsets["neutral"] > 0 and offsets["positive"] == 0.0
+    assert f1 > argmax_f1 + 0.2
+    # already well calibrated: the tie-break keeps plain argmax
+    clean = pd.DataFrame(np.eye(3)[[0, 1, 2, 2]], columns=[f"p_{c}" for c in C.LABELS])
+    y_clean = np.array(["negative", "neutral", "positive", "positive"])
+    no_change = {"negative": 0.0, "neutral": 0.0, "positive": 0.0}
+    assert M.tune_roberta(clean, y_clean) == (no_change, 1.0)
+
+
+def test_roberta_rule_never_sees_test_rows(tmp_path):
+    """Scrambling the test reviewers' labels and RoBERTa outputs must not move the tuned rule."""
+    from dap.sentiment import train as T
+
+    val_probs, val_y = under_called_neutral(300, 1)
+    test_probs, test_y = under_called_neutral(300, 2)
+    df = pd.DataFrame(
+        {
+            "review_id": np.arange(600),
+            "split": ["validation"] * 300 + ["test"] * 300,
+            "label": np.concatenate([val_y, test_y]),
+            "text": "x",
+        }
+    )
+    cache = pd.concat([val_probs, test_probs], ignore_index=True).assign(
+        review_id=df.review_id, n_tokens=5
+    )
+    path = tmp_path / "roberta_validation_predictions.csv"
+    cache.to_csv(path, index=False)
+    offsets, settings = T.roberta_rule(df, path)
+    assert settings["roberta_tuning_reviews"] == 300
+
+    # a test set that wants a very different rule (neutral over-called, so a negative offset)
+    rng = np.random.default_rng(3)
+    test = df.split == "test"
+    df.loc[test, "label"] = rng.choice(["negative", "positive"], test.sum())
+    cache.loc[test, ["p_negative", "p_neutral", "p_positive"]] = [0.2, 0.45, 0.35]
+    cache.to_csv(path, index=False)
+    assert T.roberta_rule(df, path)[0] == offsets
+
+    # the check has teeth: tuning on those test rows would give a different rule
+    rows = cache[test.to_numpy()]
+    assert M.tune_roberta(rows, df.label[test].to_numpy())[0] != offsets
+
+
 def test_fast_macro_f1_matches_sklearn():
     rng = np.random.default_rng(0)
     y = rng.choice(C.LABELS, 500)

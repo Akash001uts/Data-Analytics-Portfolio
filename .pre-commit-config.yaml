@@ -18,4 +18,4 @@ repos:
         language: fail
         files: \.(xlsx|xls|zip|parquet|gpkg|shp|csv)$
         # RoBERTa's cached predictions are an output (review ids and probabilities, no text)
-        exclude: ^(tests/fixtures/|reports/sentiment/roberta_predictions\.csv$)
+        exclude: ^(tests/fixtures/|reports/sentiment/roberta(_validation)?_predictions\.csv$)
