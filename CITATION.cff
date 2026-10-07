@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: >-
+  If you use this code, please cite it as below. The data belongs to its publishers; see the
+  "Data and credits" section of the README and each project's data notes for how to cite it.
+title: "Data Analytics Portfolio: avoidable hospital admissions across Australia, and a rebuilt sentiment evaluation"
+authors:
+  - family-names: Bhatnagar
+    given-names: Akash
+repository-code: "https://github.com/Akash001uts/Data-Analytics-Portfolio"
+license: MIT
+type: software

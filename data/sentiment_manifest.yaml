@@ -1,0 +1,29 @@
+# Data manifest for the sentiment project, kept apart from data/manifest.yaml so that
+# `dap health build` never needs this file. `dap sentiment fetch` downloads and checks it.
+# Recorded 2026-10-07.
+
+version: 1
+retrieved: 2026-10-07
+raw_dir: data/raw
+
+sources:
+
+  - id: snap_finefoods
+    title: Amazon Fine Food Reviews (568,454 reviews, October 1999 to October 2012)
+    publisher: Stanford Network Analysis Project (SNAP)
+    url: https://snap.stanford.edu/data/finefoods.txt.gz
+    file: finefoods.txt.gz
+    bytes: 122104202
+    sha256: 03bbbe147814be08a945501ef867795a8ad535385341e71f0d56a0c7d9daf1b4
+    last_modified: 2013-03-05T04:48:29Z
+    # SNAP doesn't state a licence for this dataset. A Kaggle mirror labels it CC0, which I haven't been
+    # able to confirm, so I don't rely on it. No review text is committed, apart from a few short excerpts
+    # in the sentiment notebook.
+    licence: none stated by SNAP; cite McAuley and Leskovec (2013)
+    citation: >-
+      J. McAuley and J. Leskovec. From amateurs to connoisseurs: modeling the evolution of user expertise
+      through online reviews. WWW, 2013.
+    format: >-
+      Gzipped text, one block per review: product/productId, review/userId, review/profileName,
+      review/helpfulness, review/score, review/time, review/summary, review/text, then a blank line.
+      Not valid UTF-8 throughout; some profile names contain line breaks.

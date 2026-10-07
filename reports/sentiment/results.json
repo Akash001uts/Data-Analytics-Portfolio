@@ -1,0 +1,440 @@
+{
+  "data": {
+    "after_dedupe": 393115,
+    "dropped_cross_reviewer_conflicting_label": 16,
+    "dropped_cross_reviewer_same_label": 37,
+    "dropped_same_reviewer_same_text": 175286,
+    "eval_label_share": {
+      "negative": 0.1447,
+      "neutral": 0.0761,
+      "positive": 0.7792
+    },
+    "eval_sample": 10000,
+    "labels": "1-2 stars negative, 3 neutral, 4-5 positive",
+    "reviews": 568454,
+    "split": "by reviewer, 70/10/20 train/validation/test; evaluation sample from test",
+    "test_reviewers": 51087,
+    "test_reviews": 78288,
+    "text_used": "review text only (not the summary line)",
+    "train_reviewers": 179148,
+    "train_reviews": 274592,
+    "validation_reviewers": 25796,
+    "validation_reviews": 40235
+  },
+  "differences": {
+    "tfidf_logistic minus roberta": {
+      "ci_high": 0.116,
+      "ci_low": 0.0846,
+      "estimate": 0.101
+    },
+    "vader_default minus roberta": {
+      "ci_high": -0.1115,
+      "ci_low": -0.1421,
+      "estimate": -0.1263
+    },
+    "vader_default minus tfidf_logistic": {
+      "ci_high": -0.2111,
+      "ci_low": -0.2433,
+      "estimate": -0.2273
+    },
+    "vader_default minus vader_tuned": {
+      "ci_high": -0.02927,
+      "ci_low": -0.05253,
+      "estimate": -0.04097
+    },
+    "vader_tuned minus roberta": {
+      "ci_high": -0.06927,
+      "ci_low": -0.1016,
+      "estimate": -0.08531
+    },
+    "vader_tuned minus tfidf_logistic": {
+      "ci_high": -0.1707,
+      "ci_low": -0.2026,
+      "estimate": -0.1863
+    }
+  },
+  "models": {
+    "roberta": {
+      "accuracy": 0.8149,
+      "confusion": [
+        [
+          1082,
+          163,
+          202
+        ],
+        [
+          292,
+          152,
+          317
+        ],
+        [
+          357,
+          520,
+          6915
+        ]
+      ],
+      "label": "RoBERTa (Twitter sentiment, zero-shot)",
+      "macro_f1": {
+        "ci_high": 0.6051,
+        "ci_low": 0.5824,
+        "estimate": 0.5932
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.6809,
+          "n": 1447,
+          "precision": 0.6251,
+          "recall": 0.7478
+        },
+        "neutral": {
+          "f1": 0.1905,
+          "n": 761,
+          "precision": 0.182,
+          "recall": 0.1997
+        },
+        "positive": {
+          "f1": 0.9083,
+          "n": 7792,
+          "precision": 0.9302,
+          "recall": 0.8874
+        }
+      }
+    },
+    "tfidf_logistic": {
+      "accuracy": 0.8507,
+      "confusion": [
+        [
+          1124,
+          219,
+          104
+        ],
+        [
+          204,
+          399,
+          158
+        ],
+        [
+          299,
+          509,
+          6984
+        ]
+      ],
+      "label": "TF-IDF + logistic regression",
+      "macro_f1": {
+        "ci_high": 0.7064,
+        "ci_low": 0.6812,
+        "estimate": 0.6943
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.7313,
+          "n": 1447,
+          "precision": 0.6908,
+          "recall": 0.7768
+        },
+        "neutral": {
+          "f1": 0.4227,
+          "n": 761,
+          "precision": 0.354,
+          "recall": 0.5243
+        },
+        "positive": {
+          "f1": 0.9288,
+          "n": 7792,
+          "precision": 0.9638,
+          "recall": 0.8963
+        }
+      }
+    },
+    "vader_default": {
+      "accuracy": 0.7967,
+      "confusion": [
+        [
+          546,
+          67,
+          834
+        ],
+        [
+          116,
+          28,
+          617
+        ],
+        [
+          299,
+          100,
+          7393
+        ]
+      ],
+      "label": "VADER, default thresholds",
+      "macro_f1": {
+        "ci_high": 0.4784,
+        "ci_low": 0.4555,
+        "estimate": 0.467
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.4535,
+          "n": 1447,
+          "precision": 0.5682,
+          "recall": 0.3773
+        },
+        "neutral": {
+          "f1": 0.05858,
+          "n": 761,
+          "precision": 0.1436,
+          "recall": 0.03679
+        },
+        "positive": {
+          "f1": 0.8888,
+          "n": 7792,
+          "precision": 0.8359,
+          "recall": 0.9488
+        }
+      }
+    },
+    "vader_tuned": {
+      "accuracy": 0.7499,
+      "confusion": [
+        [
+          599,
+          305,
+          543
+        ],
+        [
+          135,
+          184,
+          442
+        ],
+        [
+          381,
+          695,
+          6716
+        ]
+      ],
+      "label": "VADER, thresholds tuned on validation",
+      "macro_f1": {
+        "ci_high": 0.5199,
+        "ci_low": 0.4958,
+        "estimate": 0.5079
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.4676,
+          "n": 1447,
+          "precision": 0.5372,
+          "recall": 0.414
+        },
+        "neutral": {
+          "f1": 0.1892,
+          "n": 761,
+          "precision": 0.1554,
+          "recall": 0.2418
+        },
+        "positive": {
+          "f1": 0.867,
+          "n": 7792,
+          "precision": 0.8721,
+          "recall": 0.8619
+        }
+      }
+    }
+  },
+  "settings": {
+    "bootstrap_resamples": 2000,
+    "roberta": {
+      "label_order_in_model": [
+        "negative",
+        "neutral",
+        "positive"
+      ],
+      "licence": "CC BY 4.0",
+      "max_length": 512,
+      "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+      "revision": "3216a57f2a0d9c45a2e6c20157c20c49fb4bf9c7",
+      "torch": "2.14.1+cpu",
+      "transformers": "5.19.0"
+    },
+    "seed": 20261006,
+    "tfidf_params": {
+      "C": 2.0,
+      "class_weight": "balanced"
+    },
+    "tfidf_search": [
+      {
+        "C": 0.5,
+        "class_weight": null,
+        "validation_macro_f1": 0.6506
+      },
+      {
+        "C": 0.5,
+        "class_weight": "balanced",
+        "validation_macro_f1": 0.6833
+      },
+      {
+        "C": 2.0,
+        "class_weight": null,
+        "validation_macro_f1": 0.6789
+      },
+      {
+        "C": 2.0,
+        "class_weight": "balanced",
+        "validation_macro_f1": 0.6896
+      },
+      {
+        "C": 8.0,
+        "class_weight": null,
+        "validation_macro_f1": 0.6822
+      },
+      {
+        "C": 8.0,
+        "class_weight": "balanced",
+        "validation_macro_f1": 0.6883
+      }
+    ],
+    "tfidf_validation_macro_f1": 0.6896,
+    "tfidf_vocabulary": 300000,
+    "vader_default_thresholds": [
+      -0.05,
+      0.05
+    ],
+    "vader_tuned_thresholds": [
+      0.0,
+      0.55
+    ],
+    "vader_tuned_validation_macro_f1": 0.4986,
+    "vader_tuning_reviews": 20000
+  },
+  "slices": {
+    "contrast_word": {
+      "has a contrast word": {
+        "n": 4910,
+        "roberta": 0.5582,
+        "tfidf_logistic": 0.6734,
+        "vader_default": 0.4398,
+        "vader_tuned": 0.5031
+      },
+      "none": {
+        "n": 5090,
+        "roberta": 0.6292,
+        "tfidf_logistic": 0.6902,
+        "vader_default": 0.5013,
+        "vader_tuned": 0.5086
+      }
+    },
+    "length": {
+      "101 to 200": {
+        "n": 1748,
+        "roberta": 0.541,
+        "tfidf_logistic": 0.7075,
+        "vader_default": 0.4392,
+        "vader_tuned": 0.498
+      },
+      "51 to 100": {
+        "n": 3198,
+        "roberta": 0.5893,
+        "tfidf_logistic": 0.6962,
+        "vader_default": 0.4507,
+        "vader_tuned": 0.5183
+      },
+      "over 200": {
+        "n": 627,
+        "roberta": 0.4549,
+        "tfidf_logistic": 0.6588,
+        "vader_default": 0.4237,
+        "vader_tuned": 0.4238
+      },
+      "up to 50 words": {
+        "n": 4427,
+        "roberta": 0.6365,
+        "tfidf_logistic": 0.6859,
+        "vader_default": 0.4961,
+        "vader_tuned": 0.515
+      }
+    },
+    "mentions_stars": {
+      "mentions stars": {
+        "n": 409,
+        "roberta": 0.5232,
+        "tfidf_logistic": 0.6889,
+        "vader_default": 0.4095,
+        "vader_tuned": 0.4431
+      },
+      "no mention": {
+        "n": 9591,
+        "roberta": 0.5955,
+        "tfidf_logistic": 0.6903,
+        "vader_default": 0.4696,
+        "vader_tuned": 0.5108
+      }
+    },
+    "truncated_by_roberta": {
+      "fits in 512 tokens": {
+        "n": 9919,
+        "roberta": 0.5938,
+        "tfidf_logistic": 0.6944,
+        "vader_default": 0.4674,
+        "vader_tuned": 0.5085
+      },
+      "truncated": {
+        "n": 81,
+        "roberta": 0.4598,
+        "tfidf_logistic": 0.6548,
+        "vader_default": 0.3978,
+        "vader_tuned": 0.3924
+      }
+    }
+  },
+  "tfidf_top_terms": {
+    "negative": [
+      "two stars",
+      "terrible",
+      "awful",
+      "not recommend",
+      "not good",
+      "very disappointed",
+      "horrible",
+      "yuck",
+      "not worth",
+      "disappointing",
+      "worst",
+      "disappointment",
+      "not",
+      "nasty",
+      "one star"
+    ],
+    "neutral": [
+      "three stars",
+      "but",
+      "ok",
+      "however",
+      "not bad",
+      "okay",
+      "stars",
+      "decent",
+      "unfortunately",
+      "it three",
+      "average",
+      "great but",
+      "just ok",
+      "fine",
+      "it okay"
+    ],
+    "positive": [
+      "great",
+      "delicious",
+      "excellent",
+      "perfect",
+      "be disappointed",
+      "wonderful",
+      "love this",
+      "love it",
+      "not too",
+      "best",
+      "not disappointed",
+      "highly",
+      "good",
+      "amazing",
+      "highly recommend"
+    ]
+  }
+}
