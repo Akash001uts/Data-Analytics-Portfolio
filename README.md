@@ -41,7 +41,7 @@ predicts, because those are the places where something else is going on.
 **Why it's interesting:** neighbouring areas have very similar rates, so a normal random train/test split lets a
 model peek at the answer through the neighbours. I tested every model twice, once with random folds and once
 holding out whole regions, and the gap between the two was the most useful thing I found. A spatial lag model that
-looked best when fitted on everything turned out to rely mostly on knowing its neighbours' rates.
+looked great when fitted on everything turned out to rely mostly on knowing its neighbours' rates.
 
 What I found:
 
@@ -104,7 +104,7 @@ Everything here runs on a normal laptop, with no GPU and no accounts to sign up 
 
    (If you'd rather use pip, `pip install uv` works too. Just make sure the folder it installs into is on your PATH.)
 
-2. **Get the code.** While I'm rebuilding, the new version lives on the `rebuild` branch:
+2. **Get the code.** Until I merge it, the new version lives on the `rebuild` branch:
 
    ```
    git clone --branch rebuild https://github.com/Akash001uts/Data-Analytics-Portfolio.git

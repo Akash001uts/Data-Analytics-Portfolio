@@ -162,7 +162,7 @@ This turned out to be the most important decision so far.
 
 - **Read your outputs like a stranger would.** Going back over everything as one piece, I found the interactive
   map's footer said its licence was CC BY-NC-SA 4.0, while the READMEs and data notes all said 3.0 AU, which is
-  what PHIDU actually uses. Nothing tested the map's footer text, so it had been wrong since I built it. Now a
+  PHIDU's own licence. Nothing tested the map's footer text, so the two had disagreed since I built it. Now a
   test checks it against the licence in the data manifest.
 - **Write it up as what you did, not what you're going to do.** A lot of my README text was still in the future
   tense from when I was planning ("I'll model the log of the rate", a checklist of steps). Once the work's done,
