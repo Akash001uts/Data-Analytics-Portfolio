@@ -35,7 +35,11 @@ reviews, and where do they all go wrong?
     picked on validation;
   - the Twitter-trained RoBERTa sentiment model, used as is, with long reviews truncated to 512 tokens instead of
     dropped. Its predictions are cached in `reports/sentiment/roberta_predictions.csv` (review ids and probabilities
-    only), so nothing else needs a GPU or even PyTorch.
+    only), so nothing else needs a GPU or even PyTorch;
+  - DistilRoBERTa (a smaller RoBERTa) fine-tuned on the training reviewers. My laptop has no GPU, so I kept it
+    small: 20,000 training reviews with the same label mix as the full split, each cut to its first 128 tokens,
+    one pass over the data, and the checkpoint picked on 2,000 validation reviews. Its predictions are cached the
+    same way, in `reports/sentiment/finetuned_predictions.csv`.
 - **Evaluation:** macro-F1, so the small neutral class counts as much as the others, with paired bootstrap
   intervals. "Paired" means every model is scored on the same resampled reviews, so I can put an interval on the
   *difference* between two models, which is the thing my first version claimed without measuring.
@@ -52,12 +56,15 @@ reviews, and where do they all go wrong?
 | VADER, thresholds tuned on validation | 0.508 (0.496 to 0.520) | 0.750 | 0.24 | 0.41 |
 | TF-IDF + logistic regression | 0.694 (0.681 to 0.706) | 0.851 | 0.52 | 0.78 |
 | RoBERTa (Twitter sentiment, zero-shot) | 0.593 (0.582 to 0.605) | 0.815 | 0.20 | 0.75 |
+| DistilRoBERTa, fine-tuned on training reviews | 0.679 (0.666 to 0.691) | 0.838 | 0.50 | 0.79 |
 
 Differences in macro-F1 (same reviews, paired bootstrap):
 
 - RoBERTa (Twitter sentiment, zero-shot) minus VADER, default thresholds: 0.126 (0.112 to 0.142)
 - TF-IDF + logistic regression minus RoBERTa (Twitter sentiment, zero-shot): 0.101 (0.085 to 0.116)
 - VADER, thresholds tuned on validation minus VADER, default thresholds: 0.041 (0.029 to 0.053)
+- DistilRoBERTa, fine-tuned on training reviews minus RoBERTa (Twitter sentiment, zero-shot): 0.085 (0.070 to 0.100)
+- DistilRoBERTa, fine-tuned on training reviews minus TF-IDF + logistic regression: -0.016 (-0.028 to -0.003)
 
 <!-- results:end -->
 
@@ -69,7 +76,12 @@ Differences in macro-F1 (same reviews, paired bootstrap):
   thresholds, and the interval for the difference sits well clear of zero.
 - But a simple model trained on these reviews beats it. TF-IDF with logistic regression, trained on food
   reviews, beats the Twitter-trained RoBERTa used as is. That's a model trained on the right text against a bigger
-  model trained on different text, so I can't yet say how much is the data and how much the model.
+  model trained on different text.
+- Fine-tuning closes most of that gap, but not all of it. A small transformer fine-tuned on 20,000 of the
+  training reviews beats zero-shot RoBERTa comfortably and lands just below TF-IDF, and the interval for that
+  last difference only just misses zero. On reviews short enough to fit in its 128 tokens it's at least as good
+  as TF-IDF; on the longer ones, where it only sees the start, it falls well behind. So most of RoBERTa's gap was
+  the training data, and what's left looks like what I cut to make it run on a CPU.
 - Accuracy would have told the wrong story. Nearly four in five reviews are positive, so tuning VADER's
   thresholds lowers its accuracy while raising its macro-F1, because it starts finding some neutral reviews.
 - VADER's default thresholds call most negative reviews positive. It adds up word scores, so "good" in "a good
@@ -88,8 +100,10 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 
 - The labels come from star ratings, which mix sentiment with price, delivery and the odd mistake.
 - RoBERTa is used zero-shot, and unlike VADER's thresholds, its decision rule wasn't tuned on validation. Most of
-  its gap is on the neutral class, which tuning might move. Fine-tuning it on the training reviews is the obvious
-  next step, and would show whether the gap is about the model or the data.
+  its gap is on the neutral class, which tuning might move.
+- The fine-tuned model saw 20,000 reviews cut to 128 tokens, while TF-IDF learnt from all of the training reviews
+  in full. That's not an even contest, and with one run I can't say whether more data or longer inputs would
+  matter more.
 - One dataset and one kind of text: Amazon food reviews from 1999 to 2012.
 
 ## Run it
@@ -100,11 +114,13 @@ uv run dap sentiment train     # VADER, TF-IDF, and scoring everything (uses the
 ```
 
 To re-run RoBERTa itself (about 25 minutes on a laptop CPU): `uv sync --group nlp`, then
-`uv run dap sentiment transformer`.
+`uv run dap sentiment transformer`. To redo the fine-tuning (about 50 minutes on a laptop CPU), run
+`uv run dap sentiment finetune` after the same `uv sync`. The fine-tuned weights stay in `data/processed`.
 
 ## Credits and licence
 
 The data is from J. McAuley and J. Leskovec, "From amateurs to connoisseurs: modeling the evolution of user
 expertise through online reviews", WWW 2013, via SNAP. SNAP doesn't state a licence for this dataset, so the few
-review excerpts in the notebook aren't covered by this repo's licence. The model is
-`cardiffnlp/twitter-roberta-base-sentiment-latest` (CC BY 4.0), pinned to one commit. My code is MIT licensed.
+review excerpts in the notebook aren't covered by this repo's licence. The models are
+`cardiffnlp/twitter-roberta-base-sentiment-latest` (CC BY 4.0) and `distilbert/distilroberta-base` (Apache 2.0),
+each pinned to one commit. My code is MIT licensed.
