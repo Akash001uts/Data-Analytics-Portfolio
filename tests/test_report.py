@@ -107,3 +107,17 @@ def test_city_detection():
 def test_missing_inputs_say_what_to_run(tmp_path):
     with pytest.raises(FileNotFoundError, match="dap health build"):
         R.load(tmp_path / "nope.gpkg", tmp_path / "nope2.gpkg")
+
+
+def test_map_footer_states_the_phidu_licence():
+    from importlib import resources
+
+    from dap.common import paths
+    from dap.common.manifest import load_manifest
+
+    licences = {
+        s.licence for s in load_manifest(paths.manifest_path()).sources if s.id.startswith("phidu")
+    }
+    assert licences == {"CC BY-NC-SA 3.0 AU"}
+    page = resources.files("dap.health").joinpath("map_template.html").read_text(encoding="utf-8")
+    assert "CC BY-NC-SA 3.0 AU" in page and "by-nc-sa/3.0/au/" in page

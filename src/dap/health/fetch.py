@@ -1,7 +1,8 @@
 """`dap health fetch`: download every source in the manifest and check it.
 
 Pinned files must match their size and SHA256 exactly. Live MyHospitals API responses change, so
-they are saved as retrieved and checked against the Phase 0 record counts, within a tolerance.
+they are saved as retrieved and checked against the record counts from my first download, within a
+tolerance.
 """
 
 import json

@@ -1,1 +1,1 @@
-"""Sentiment evaluation on Amazon Fine Food Reviews (rebuilt in Phase 5)."""
+"""Sentiment evaluation on Amazon Fine Food Reviews (my v1 sentiment project, redone)."""
