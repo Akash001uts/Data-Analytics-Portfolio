@@ -158,6 +158,21 @@ This turned out to be the most important decision so far.
 - **Read the mistakes.** Some one-star reviews praise the food and complain about the price, and one reads like a
   five-star review with the wrong rating. No model can get that kind right, so a perfect score isn't possible.
 
+## Tuning RoBERTa's decision rule (7 Oct 2026)
+
+- **Give every model the same chance.** I'd tuned VADER's thresholds on validation but used RoBERTa's plain
+  argmax, which made the comparison a bit lopsided. So I scored 5,000 validation reviews with RoBERTa and tuned an
+  offset on the log probability of negative and neutral, the same kind of grid search I did for VADER.
+- **The fix wasn't where I expected.** I assumed RoBERTa needed a push towards neutral. The best rule actually made
+  it slower to say negative, because zero-shot it was calling a lot of three-star reviews negative. Looking at the
+  confusion matrix before guessing would have told me that.
+- **A real gain can still be a small one.** The paired bootstrap puts the improvement clear of zero, but it closes
+  only a small part of the gap to TF-IDF. So the gap is mostly about what RoBERTa learnt, not where it draws its
+  lines.
+- **Test that tuning can't see the test set.** The test scrambles the test reviewers' labels and RoBERTa outputs and
+  checks the tuned rule doesn't move. It also checks that tuning on those scrambled rows would give a different
+  rule, so the test would actually catch a leak.
+
 ## Tidying up the write-up (7 Oct 2026)
 
 - **Read your outputs like a stranger would.** Going back over everything as one piece, I found the interactive
