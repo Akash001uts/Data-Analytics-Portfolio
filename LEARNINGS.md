@@ -202,3 +202,21 @@ This turned out to be the most important decision so far.
 - **Write it up as what you did, not what you're going to do.** A lot of my README text was still in the future
   tense from when I was planning ("I'll model the log of the rate", a checklist of steps). Once the work's done,
   that reads like it isn't.
+
+## Fine-tuning a transformer on the reviews (7 Oct 2026)
+
+- **It answered the question I'd left open.** TF-IDF beat zero-shot RoBERTa, and I couldn't say whether that was
+  the model or the training data. Fine-tuning a smaller transformer on the training reviewers closed most of the
+  gap, so it was mostly the data: a model trained on tweets doesn't know how food reviews talk.
+- **A laptop CPU changes the experiment.** One pass over all of the training reviews would have taken about ten
+  hours, so I used a stratified sample of 20,000, cut each review to 128 tokens, and timed a few batches first to
+  check it would fit in under an hour. That makes it an uneven contest with TF-IDF, which saw everything, and I
+  say so in the write-up.
+- **Slices showed where the rest of the gap went.** On short reviews the fine-tuned model matches TF-IDF; on long
+  ones, where it only sees the start, it falls behind. Without the length split I'd only have known it was a bit
+  worse overall.
+- **Pick the checkpoint on validation, not on the test set.** I scored a sample of validation reviewers a few times
+  during training and kept the best checkpoint. The evaluation sample was scored once, at the end, like every other
+  model, and a test checks that the fine-tuning sample never includes a test reviewer.
+- **Cache the slow part.** Like RoBERTa, the fine-tuned model's predictions are committed as ids and
+  probabilities, so `dap sentiment train` still runs in a few minutes without PyTorch.

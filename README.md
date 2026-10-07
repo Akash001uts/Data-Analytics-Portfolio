@@ -49,7 +49,7 @@ What I found:
 - Maryborough in Queensland is the biggest surprise, at roughly double what its profile predicts, and it's been
   high in every year of the data.
 - The leftover errors lean by state, even though the features don't include it. Giving LightGBM a state intercept
-  made it the best model, but the NT and ACT still sit above expected.
+  lifts it further, but the NT and ACT still sit above expected.
 
 The full write-up, with the results table, is in the [project README](projects/avoidable-hospitalisations).
 There's also an [interactive version of the map](https://akash001uts.github.io/Data-Analytics-Portfolio/) you can open in any browser. `uv run dap health report` rebuilds it.
@@ -57,7 +57,7 @@ There's also an [interactive version of the map](https://akash001uts.github.io/D
 ## Sentiment analysis, redone
 
 My first sentiment project said a RoBERTa transformer was "clearly" better than VADER without calculating a
-single score. This time I measured it: five models on the same 10,000 held-out Amazon food reviews, with macro-F1
+single score. This time I measured it: six models on the same 10,000 held-out Amazon food reviews, with macro-F1
 and paired bootstrap intervals, after removing duplicate reviews and splitting by reviewer.
 
 ![Macro-F1 for each sentiment model with 95% bootstrap intervals](reports/sentiment/figures/01_macro_f1.png)
@@ -65,7 +65,9 @@ and paired bootstrap intervals, after removing duplicate reviews and splitting b
 **Why it's interesting:** my old claim turned out to be right, but only half the story. RoBERTa does beat VADER,
 and the interval for the difference is well clear of zero. But a plain TF-IDF and logistic regression model trained
 on the reviews beats RoBERTa, which was trained on tweets and used as is, even after I tuned its decision rule on
-validation. Accuracy would have told the wrong story too, because nearly four in five reviews are positive.
+validation. Fine-tuning a small transformer on the reviews closes most of that gap, which says the training data
+mattered more than the model. Accuracy would have told the wrong story too, because nearly four in five reviews are
+positive.
 
 The full write-up is in the [project README](projects/sentiment-analysis).
 
@@ -177,7 +179,8 @@ Everything here runs on a normal laptop, with no GPU and no accounts to sign up 
    The first downloads about 120 MB of reviews from SNAP. The second removes duplicates, splits by reviewer, fits
    VADER and TF-IDF, and scores every model on the same 10,000 reviews (about 5 minutes). RoBERTa's predictions
    come from a committed cache, so you don't need PyTorch. To re-run RoBERTa itself: `uv sync --group nlp`, then
-   `uv run dap sentiment transformer` (about 25 minutes on a laptop CPU).
+   `uv run dap sentiment transformer` (about 25 minutes on a laptop CPU). The fine-tuned DistilRoBERTa is cached
+   the same way; `uv run dap sentiment finetune` redoes it (about 50 minutes).
 
 9. **Open the notebooks.** They're already run, so you can read them on GitHub. To run them yourself:
 
@@ -210,11 +213,11 @@ projects/
 src/dap/                        the shared Python code, so tests and notebooks can import it
   common/                       file paths, seeds, and the data manifest checker
   health/                       downloading, cleaning, the feature allowlist, spatial stats, models and CV
-  sentiment/                    parsing and deduping the reviews, VADER, TF-IDF, the RoBERTa cache, evaluation
+  sentiment/                    parsing and deduping the reviews, VADER, TF-IDF, the two transformers, evaluation
 tests/                          pytest tests, plus tiny made-up data in tests/fixtures
 data/manifest.yaml              where every health data file comes from, with its size and SHA256 (the data itself isn't in git)
 data/sentiment_manifest.yaml    the same for the review data
-reports/                        generated outputs: results.json, figures, the interactive map, the RoBERTa cache
+reports/                        generated outputs: results.json, figures, the interactive map, the transformer caches
 LEARNINGS.md                    what I've learnt and got wrong along the way
 ```
 
@@ -241,7 +244,8 @@ The review data is the Amazon Fine Food Reviews dataset from the Stanford Networ
 J. McAuley and J. Leskovec, "From amateurs to connoisseurs: modeling the evolution of user expertise through online
 reviews", WWW 2013. The transformer is CardiffNLP's
 [`twitter-roberta-base-sentiment-latest`](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest)
-(CC BY 4.0), pinned to one commit.
+(CC BY 4.0), and the one I fine-tuned is
+[`distilroberta-base`](https://huggingface.co/distilbert/distilroberta-base) (Apache 2.0), both pinned to one commit.
 
 ## Licence
 
@@ -251,4 +255,4 @@ CC BY-NC-SA 3.0 AU, as PHIDU's licence requires, so it's for non-commercial use.
 The sentiment notebook quotes a few short review excerpts from the SNAP dataset. SNAP doesn't state a licence for it,
 so those excerpts aren't covered by the MIT licence. They're only there to show where the models go wrong, and the
 dataset is cited above. The committed RoBERTa predictions (review IDs and probabilities, no text) come from a CC BY
-4.0 model.
+4.0 model, and the fine-tuned model's predictions from an Apache 2.0 one.

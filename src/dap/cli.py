@@ -102,6 +102,20 @@ def _sentiment_transformer(args: argparse.Namespace) -> int:
     return 0
 
 
+def _sentiment_finetune(args: argparse.Namespace) -> int:
+    from dap.sentiment.data import load_reviews
+    from dap.sentiment.finetune import run
+
+    try:
+        reviews, _ = load_reviews()
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    out = run(reviews, limit=args.limit)
+    print(f"wrote {out}")
+    return 0
+
+
 def _sentiment_train(args: argparse.Namespace) -> int:
     from dap.sentiment.train import train
 
@@ -159,6 +173,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="the evaluation sample (default), or the validation sample used to tune the rule",
     )
     trans.set_defaults(func=_sentiment_transformer)
+    tune = scmd.add_parser(
+        "finetune",
+        help="fine-tune DistilRoBERTa on training reviews and cache its predictions (--group nlp)",
+    )
+    tune.add_argument(
+        "--limit", type=int, help="fine-tune on only this many reviews (a quick check)"
+    )
+    tune.set_defaults(func=_sentiment_finetune)
     strain = scmd.add_parser("train", help="fit the baselines, evaluate everything, write results")
     strain.set_defaults(func=_sentiment_train)
     return parser

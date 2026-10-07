@@ -87,13 +87,15 @@ class TfidfLogistic:
         return out
 
 
-def roberta_labels(probs: pd.DataFrame, offsets: dict[str, float] | None = None) -> np.ndarray:
+def roberta_labels(
+    probs: pd.DataFrame, offsets: dict[str, float] | None = None, prefix: str = "p_"
+) -> np.ndarray:
     """The most likely class, after adding an offset to each class's log probability.
 
     With no offsets this is plain argmax. An offset of +1 on neutral means "pick neutral even when
     it is up to e (about 2.7) times less likely than the top class".
     """
-    cols = [f"p_{lab}" for lab in LABELS]
+    cols = [f"{prefix}{lab}" for lab in LABELS]
     logp = np.log(np.clip(probs[cols].to_numpy(dtype=float), 1e-6, None))
     if offsets:
         logp = logp + np.array([offsets.get(lab, 0.0) for lab in LABELS])

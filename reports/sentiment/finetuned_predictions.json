@@ -1,0 +1,57 @@
+{
+  "batch_size": 16,
+  "best_step": 1248,
+  "class_weights": {
+    "negative": 2.293314986813439,
+    "neutral": 4.409171075837743,
+    "positive": 0.42787155295980145
+  },
+  "epochs": 1,
+  "history": [
+    {
+      "reviews_seen": 4992,
+      "step": 312,
+      "validation_macro_f1": 0.6315903616316761
+    },
+    {
+      "reviews_seen": 9984,
+      "step": 624,
+      "validation_macro_f1": 0.6634625972314433
+    },
+    {
+      "reviews_seen": 14976,
+      "step": 936,
+      "validation_macro_f1": 0.655685023821013
+    },
+    {
+      "reviews_seen": 19968,
+      "step": 1248,
+      "validation_macro_f1": 0.6691293911047059
+    },
+    {
+      "reviews_seen": 20000,
+      "step": 1250,
+      "validation_macro_f1": 0.6691293911047059
+    }
+  ],
+  "learning_rate": 3e-05,
+  "licence": "Apache 2.0",
+  "loss": "cross-entropy with balanced class weights",
+  "max_length": 128,
+  "model": "distilbert/distilroberta-base",
+  "prediction_minutes": 4.5,
+  "revision": "fb53ab8802853c8e4fbdbcd0529f21fc6f459b2b",
+  "torch": "2.14.1+cpu",
+  "training_label_share": {
+    "negative": 0.14535,
+    "neutral": 0.0756,
+    "positive": 0.77905
+  },
+  "training_minutes": 45.5,
+  "training_reviews": 20000,
+  "transformers": "5.19.0",
+  "validation_macro_f1": 0.6691293911047059,
+  "validation_reviews": 2000,
+  "warmup_share": 0.06,
+  "weight_decay": 0.01
+}

@@ -9,7 +9,14 @@ START = (
     "from reports/sentiment/results.json) -->"
 )
 END = "<!-- results:end -->"
-ORDER = ("vader_default", "vader_tuned", "tfidf_logistic", "roberta", "roberta_tuned")
+ORDER = (
+    "vader_default",
+    "vader_tuned",
+    "tfidf_logistic",
+    "roberta",
+    "roberta_tuned",
+    "finetuned",
+)
 
 
 def readme_path() -> Path:
@@ -63,6 +70,8 @@ def render(r: dict) -> str:
         ("vader_tuned", "vader_default"),
         ("roberta_tuned", "roberta"),
         ("tfidf_logistic", "roberta_tuned"),
+        ("finetuned", "roberta"),
+        ("finetuned", "tfidf_logistic"),
     ):
         names = f"{r['models'][a]['label']} minus {r['models'][b]['label']}"
         lines.append(f"- {names}: {_ci(difference(diffs, a, b))}")

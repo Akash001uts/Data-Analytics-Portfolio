@@ -22,10 +22,25 @@
     "validation_reviews": 40235
   },
   "differences": {
+    "roberta minus finetuned": {
+      "ci_high": -0.06963,
+      "ci_low": -0.1003,
+      "estimate": -0.08539
+    },
     "roberta minus roberta_tuned": {
       "ci_high": -0.01097,
       "ci_low": -0.03172,
       "estimate": -0.02138
+    },
+    "roberta_tuned minus finetuned": {
+      "ci_high": -0.0493,
+      "ci_low": -0.07853,
+      "estimate": -0.064
+    },
+    "tfidf_logistic minus finetuned": {
+      "ci_high": 0.02808,
+      "ci_low": 0.002825,
+      "estimate": 0.01564
     },
     "tfidf_logistic minus roberta": {
       "ci_high": 0.116,
@@ -36,6 +51,11 @@
       "ci_high": 0.09522,
       "ci_low": 0.06416,
       "estimate": 0.07965
+    },
+    "vader_default minus finetuned": {
+      "ci_high": -0.1947,
+      "ci_low": -0.2274,
+      "estimate": -0.2117
     },
     "vader_default minus roberta": {
       "ci_high": -0.1115,
@@ -57,6 +77,11 @@
       "ci_low": -0.05253,
       "estimate": -0.04097
     },
+    "vader_tuned minus finetuned": {
+      "ci_high": -0.1546,
+      "ci_low": -0.1868,
+      "estimate": -0.1707
+    },
     "vader_tuned minus roberta": {
       "ci_high": -0.06927,
       "ci_low": -0.1016,
@@ -74,6 +99,52 @@
     }
   },
   "models": {
+    "finetuned": {
+      "accuracy": 0.8381,
+      "confusion": [
+        [
+          1144,
+          219,
+          84
+        ],
+        [
+          226,
+          383,
+          152
+        ],
+        [
+          362,
+          576,
+          6854
+        ]
+      ],
+      "label": "DistilRoBERTa, fine-tuned on training reviews",
+      "macro_f1": {
+        "ci_high": 0.6907,
+        "ci_low": 0.6664,
+        "estimate": 0.6786
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.7197,
+          "n": 1447,
+          "precision": 0.6605,
+          "recall": 0.7906
+        },
+        "neutral": {
+          "f1": 0.395,
+          "n": 761,
+          "precision": 0.3251,
+          "recall": 0.5033
+        },
+        "positive": {
+          "f1": 0.9211,
+          "n": 7792,
+          "precision": 0.9667,
+          "recall": 0.8796
+        }
+      }
+    },
     "roberta": {
       "accuracy": 0.8149,
       "confusion": [
@@ -307,6 +378,63 @@
   },
   "settings": {
     "bootstrap_resamples": 2000,
+    "finetuned": {
+      "batch_size": 16,
+      "best_step": 1248,
+      "class_weights": {
+        "negative": 2.293,
+        "neutral": 4.409,
+        "positive": 0.4279
+      },
+      "epochs": 1,
+      "history": [
+        {
+          "reviews_seen": 4992,
+          "step": 312,
+          "validation_macro_f1": 0.6316
+        },
+        {
+          "reviews_seen": 9984,
+          "step": 624,
+          "validation_macro_f1": 0.6635
+        },
+        {
+          "reviews_seen": 14976,
+          "step": 936,
+          "validation_macro_f1": 0.6557
+        },
+        {
+          "reviews_seen": 19968,
+          "step": 1248,
+          "validation_macro_f1": 0.6691
+        },
+        {
+          "reviews_seen": 20000,
+          "step": 1250,
+          "validation_macro_f1": 0.6691
+        }
+      ],
+      "learning_rate": 3e-05,
+      "licence": "Apache 2.0",
+      "loss": "cross-entropy with balanced class weights",
+      "max_length": 128,
+      "model": "distilbert/distilroberta-base",
+      "prediction_minutes": 4.5,
+      "revision": "fb53ab8802853c8e4fbdbcd0529f21fc6f459b2b",
+      "torch": "2.14.1+cpu",
+      "training_label_share": {
+        "negative": 0.1454,
+        "neutral": 0.0756,
+        "positive": 0.7791
+      },
+      "training_minutes": 45.5,
+      "training_reviews": 20000,
+      "transformers": "5.19.0",
+      "validation_macro_f1": 0.6691,
+      "validation_reviews": 2000,
+      "warmup_share": 0.06,
+      "weight_decay": 0.01
+    },
     "roberta": {
       "label_order_in_model": [
         "negative",
@@ -381,6 +509,7 @@
   "slices": {
     "contrast_word": {
       "has a contrast word": {
+        "finetuned": 0.647,
         "n": 4910,
         "roberta": 0.5582,
         "roberta_tuned": 0.5804,
@@ -389,6 +518,7 @@
         "vader_tuned": 0.5031
       },
       "none": {
+        "finetuned": 0.6943,
         "n": 5090,
         "roberta": 0.6292,
         "roberta_tuned": 0.6423,
@@ -397,8 +527,29 @@
         "vader_tuned": 0.5086
       }
     },
+    "cut_for_finetuned": {
+      "cut": {
+        "finetuned": 0.6077,
+        "n": 2296,
+        "roberta": 0.5193,
+        "roberta_tuned": 0.5237,
+        "tfidf_logistic": 0.7008,
+        "vader_default": 0.4317,
+        "vader_tuned": 0.4764
+      },
+      "fits in 128 tokens": {
+        "finetuned": 0.7044,
+        "n": 7704,
+        "roberta": 0.6145,
+        "roberta_tuned": 0.6401,
+        "tfidf_logistic": 0.6892,
+        "vader_default": 0.4782,
+        "vader_tuned": 0.5165
+      }
+    },
     "length": {
       "101 to 200": {
+        "finetuned": 0.6547,
         "n": 1748,
         "roberta": 0.541,
         "roberta_tuned": 0.5492,
@@ -407,6 +558,7 @@
         "vader_tuned": 0.498
       },
       "51 to 100": {
+        "finetuned": 0.6951,
         "n": 3198,
         "roberta": 0.5893,
         "roberta_tuned": 0.622,
@@ -415,6 +567,7 @@
         "vader_tuned": 0.5183
       },
       "over 200": {
+        "finetuned": 0.4988,
         "n": 627,
         "roberta": 0.4549,
         "roberta_tuned": 0.4338,
@@ -423,6 +576,7 @@
         "vader_tuned": 0.4238
       },
       "up to 50 words": {
+        "finetuned": 0.7116,
         "n": 4427,
         "roberta": 0.6365,
         "roberta_tuned": 0.6598,
@@ -433,6 +587,7 @@
     },
     "mentions_stars": {
       "mentions stars": {
+        "finetuned": 0.6017,
         "n": 409,
         "roberta": 0.5232,
         "roberta_tuned": 0.5413,
@@ -441,6 +596,7 @@
         "vader_tuned": 0.4431
       },
       "no mention": {
+        "finetuned": 0.6803,
         "n": 9591,
         "roberta": 0.5955,
         "roberta_tuned": 0.6157,
@@ -451,6 +607,7 @@
     },
     "truncated_by_roberta": {
       "fits in 512 tokens": {
+        "finetuned": 0.6811,
         "n": 9919,
         "roberta": 0.5938,
         "roberta_tuned": 0.6157,
@@ -459,6 +616,7 @@
         "vader_tuned": 0.5085
       },
       "truncated": {
+        "finetuned": 0.4386,
         "n": 81,
         "roberta": 0.4598,
         "roberta_tuned": 0.4054,

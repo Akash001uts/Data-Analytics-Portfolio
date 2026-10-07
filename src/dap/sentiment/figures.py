@@ -17,13 +17,15 @@ from dap.common.plotting import (
 )
 from dap.sentiment.evaluate import LENGTH_LABELS
 
-# The two VADER variants share a hue (light and dark blue), as do the two RoBERTa rules (green).
+# The two VADER variants share a hue (light and dark blue), and so do the RoBERTa models (greens);
+# TF-IDF gets its own colour.
 COLOURS = {
     "vader_default": BLUE_RAMP[2],
     "vader_tuned": CATEGORICAL[0],
     "tfidf_logistic": CATEGORICAL[1],
     "roberta": CATEGORICAL[2],
     "roberta_tuned": "#117a53",  # a darker green, so the two RoBERTa rules read as a pair
+    "finetuned": "#0b6e4b",  # a darker shade of the RoBERTa green
 }
 
 

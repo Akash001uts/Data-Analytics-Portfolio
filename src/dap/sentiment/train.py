@@ -1,7 +1,8 @@
 """`dap sentiment train`: fit the baselines, score every model on one sample, write results.
 
-RoBERTa's predictions come from the committed caches (`dap sentiment transformer` makes them), so
-this step needs no torch. Everything the README quotes comes from `reports/sentiment/results.json`.
+RoBERTa's and the fine-tuned model's predictions come from committed caches (`dap sentiment
+transformer` and `dap sentiment finetune` make them), so this step needs no torch.
+Everything the README quotes comes from `reports/sentiment/results.json`.
 """
 
 import json
@@ -16,6 +17,7 @@ from dap.common import paths
 from dap.common.io import sig, write_json
 from dap.common.seeds import SEED, set_seed
 from dap.sentiment import evaluate as E
+from dap.sentiment import finetune
 from dap.sentiment import models as M
 from dap.sentiment.clean import LABELS
 from dap.sentiment.data import load_reviews
@@ -29,6 +31,7 @@ LABELS_FOR = {
     "tfidf_logistic": "TF-IDF + logistic regression",
     "roberta": "RoBERTa (Twitter sentiment, zero-shot)",
     "roberta_tuned": "RoBERTa, decision rule tuned on validation",
+    "finetuned": "DistilRoBERTa, fine-tuned on training reviews",
 }
 VADER_TUNING_SIZE = 20_000  # validation reviews used to pick VADER's thresholds
 
@@ -68,12 +71,25 @@ def roberta_rule(df: pd.DataFrame, path: Path | None = None) -> tuple[dict[str, 
     }
 
 
+def with_finetuned(ev: pd.DataFrame) -> pd.DataFrame:
+    """The fine-tuned model's probabilities, as ft_p_negative and so on."""
+    ft = finetune.read_cache()
+    missing = set(ev.review_id) - set(ft.index)
+    if missing:
+        raise FileNotFoundError(
+            f"{finetune.cache_path()} has no predictions for {len(missing)} evaluation reviews; "
+            "run `dap sentiment finetune`"
+        )
+    probs = ft[[f"p_{lab}" for lab in LABELS]].add_prefix("ft_")
+    return ev.join(probs, on="review_id")
+
+
 def predict_all(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, dict[str, np.ndarray], dict, M.TfidfLogistic]:
     train = df[df.split == "train"]
     val = df[df.split == "validation"]
-    ev = with_roberta(df[df.in_eval].sort_values("review_id"))
+    ev = with_finetuned(with_roberta(df[df.in_eval].sort_values("review_id")))
 
     log.info("VADER: tuning thresholds on %d validation reviews", VADER_TUNING_SIZE)
     tune = val.sample(min(VADER_TUNING_SIZE, len(val)), random_state=SEED)
@@ -91,6 +107,7 @@ def predict_all(
         "tfidf_logistic": tfidf.predict(ev.text),
         "roberta": M.roberta_labels(ev),
         "roberta_tuned": M.roberta_labels(ev, offsets),
+        "finetuned": M.roberta_labels(ev, prefix="ft_p_"),
     }
     settings = {
         "vader_default_thresholds": list(M.VADER_DEFAULT),
@@ -119,6 +136,8 @@ def train(out_dir: Path | None = None) -> dict:
     for m, p in preds.items():
         models[m] = {"label": LABELS_FOR[m], **E.scores(y, p), "macro_f1": single[m]}
     meta = json.loads(cache_path().with_suffix(".json").read_text(encoding="utf-8"))
+    ft_path = finetune.cache_path().with_suffix(".json")
+    ft_meta = json.loads(ft_path.read_text(encoding="utf-8"))
     results = {
         "data": counts
         | {
@@ -127,7 +146,8 @@ def train(out_dir: Path | None = None) -> dict:
             "labels": "1-2 stars negative, 3 neutral, 4-5 positive",
             "split": "by reviewer, 70/10/20 train/validation/test; evaluation sample from test",
         },
-        "settings": settings | {"roberta": meta, "bootstrap_resamples": E.N_BOOT, "seed": SEED},
+        "settings": settings
+        | {"roberta": meta, "finetuned": ft_meta, "bootstrap_resamples": E.N_BOOT, "seed": SEED},
         "models": models,
         "differences": diffs,
         "slices": E.slices(ev, preds),
