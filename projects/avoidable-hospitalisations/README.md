@@ -49,8 +49,8 @@ The unit of analysis is the **SA3**, an ABS area of roughly 30,000 to 130,000 pe
   with a random split to show how much neighbouring areas inflate the score.
 - **Mapped the residuals**, the "better or worse than expected" map, which is the main result.
 - **Built an interactive map** (`uv run dap health report`), with each area's rate, its expected rate and the hot
-  and cold spots. It's committed at `reports/map/index.html`, so you can download it and open it in a browser
-  without running anything. I'll put it on GitHub Pages once the rebuild is merged.
+  and cold spots. It's [live on GitHub Pages](https://akash001uts.github.io/Data-Analytics-Portfolio/),
+  and the same file is committed at `reports/map/index.html`.
 
 ## What I found
 

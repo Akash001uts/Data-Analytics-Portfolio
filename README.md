@@ -11,7 +11,7 @@ tag if you want to see where I started.
 
 | Project | The question | Status |
 | --- | --- | --- |
-| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Done, with an interactive map |
+| [Avoidable hospital admissions](projects/avoidable-hospitalisations) | Which parts of Australia have more potentially preventable hospital admissions than you'd expect from their social and access profile? | Done, with an [interactive map](https://akash001uts.github.io/Data-Analytics-Portfolio/) |
 | [Sentiment analysis, redone](projects/sentiment-analysis) | When you measure it properly, how much better is a transformer than simple baselines at reading food reviews? | Done |
 
 ## Quick start
@@ -51,7 +51,7 @@ What I found:
 - The leftover errors lean by state, even though no model was told the state.
 
 The full write-up, with the results table, is in the [project README](projects/avoidable-hospitalisations).
-`uv run dap health report` builds an interactive version of the map that you can open in any browser.
+There's also an [interactive version of the map](https://akash001uts.github.io/Data-Analytics-Portfolio/) you can open in any browser. `uv run dap health report` rebuilds it.
 
 ## Sentiment analysis, redone
 
