@@ -1,8 +1,8 @@
 """The baselines: VADER (rule-based) and TF-IDF with logistic regression.
 
 Anything that gets tuned (VADER's thresholds, the regression's C and class weights, RoBERTa's
-decision rule) is tuned on the validation reviewers only. The evaluation sample is touched once,
-at the end.
+decision rule and its recalibration) is tuned on the validation reviewers only. The evaluation
+sample is touched once, at the end.
 """
 
 import numpy as np
@@ -11,12 +11,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 
+from dap.common.seeds import SEED
 from dap.sentiment.clean import LABELS
 
 VADER_DEFAULT = (-0.05, 0.05)  # the thresholds from the VADER paper, and what my first version used
 THRESHOLD_GRID = np.round(np.arange(-0.95, 0.96, 0.05), 2)
 # Offsets added to RoBERTa's log probabilities for negative and neutral (positive stays at 0)
 OFFSET_GRID = np.round(np.arange(-3.0, 3.01, 0.1), 1)
+CALIBRATION_GRID = (None, "balanced")  # class weighting for the regression on RoBERTa's scores
 TFIDF_GRID = [{"C": c, "class_weight": cw} for c in (0.5, 2.0, 8.0) for cw in (None, "balanced")]
 
 
@@ -117,3 +119,57 @@ def tune_roberta(probs: pd.DataFrame, y: np.ndarray) -> tuple[dict[str, float], 
             if best_key is None or key > best_key:
                 best, best_key = offsets, key
     return best, float(best_key[0])
+
+
+def offsets_inside_grid(offsets: dict[str, float]) -> bool:
+    """True when no tuned offset sits on the grid's edge (an edge means the grid was too small)."""
+    lo, hi = float(OFFSET_GRID.min()), float(OFFSET_GRID.max())
+    return all(lo < offsets[lab] < hi for lab in ("negative", "neutral"))
+
+
+class RobertaCalibration:
+    """A multinomial logistic regression on RoBERTa's three log probabilities ("matrix scaling").
+
+    The offsets above can only shift each class's score; this can also reweight them against each
+    other. It is fitted on validation reviews only, and the class weighting is picked by 5-fold
+    cross-validation inside those reviews, so the fit never scores itself on rows it learnt from.
+    """
+
+    def fit(self, probs: pd.DataFrame, y: np.ndarray, prefix: str = "p_") -> "RobertaCalibration":
+        from sklearn.model_selection import StratifiedKFold, cross_val_predict
+
+        x = self._features(probs, prefix)
+        folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
+        self.search_ = {}
+        for cw in CALIBRATION_GRID:
+            pred = cross_val_predict(self._model(cw), x, y, cv=folds)
+            f1 = f1_score(y, pred, average="macro", labels=LABELS, zero_division=0)
+            self.search_[str(cw)] = float(f1)
+        self.class_weight_ = max(CALIBRATION_GRID, key=lambda cw: self.search_[str(cw)])
+        self.cv_macro_f1_ = self.search_[str(self.class_weight_)]
+        self.model_ = self._model(self.class_weight_).fit(x, y)
+        return self
+
+    def predict(self, probs: pd.DataFrame, prefix: str = "p_") -> np.ndarray:
+        return self.model_.predict(self._features(probs, prefix))
+
+    def coefficients(self) -> dict[str, dict[str, float]]:
+        """One row per predicted class: its weight on each log probability, and its intercept."""
+        classes = self.model_.classes_
+        if len(classes) == 2:  # a binary fit keeps one row, for the second class
+            classes = classes[1:]
+        out = {}
+        for i, cls in enumerate(classes):
+            weights = zip(LABELS, self.model_.coef_[i], strict=True)
+            row = {f"log_p_{lab}": float(w) for lab, w in weights}
+            out[str(cls)] = row | {"intercept": float(self.model_.intercept_[i])}
+        return out
+
+    @staticmethod
+    def _model(class_weight):
+        return LogisticRegression(class_weight=class_weight, max_iter=1000)
+
+    @staticmethod
+    def _features(probs: pd.DataFrame, prefix: str) -> np.ndarray:
+        cols = [f"{prefix}{lab}" for lab in LABELS]
+        return np.log(np.clip(probs[cols].to_numpy(dtype=float), 1e-6, None))

@@ -31,6 +31,7 @@ LABELS_FOR = {
     "tfidf_logistic": "TF-IDF + logistic regression",
     "roberta": "RoBERTa (Twitter sentiment, zero-shot)",
     "roberta_tuned": "RoBERTa, decision rule tuned on validation",
+    "roberta_calibrated": "RoBERTa, recalibrated on validation (logistic regression)",
     "finetuned": "DistilRoBERTa, fine-tuned on training reviews",
 }
 VADER_TUNING_SIZE = 20_000  # validation reviews used to pick VADER's thresholds
@@ -63,11 +64,33 @@ def roberta_rule(df: pd.DataFrame, path: Path | None = None) -> tuple[dict[str, 
     log.info("RoBERTa: tuning the decision rule on %d validation reviews", len(tune))
     offsets, tuned_f1 = M.tune_roberta(tune, tune.label.to_numpy())
     argmax_f1 = f1_score(tune.label, M.roberta_labels(tune), average="macro", labels=LABELS)
+    grid = M.OFFSET_GRID
     return offsets, {
         "roberta_tuned_log_offsets": offsets,
+        "roberta_offset_grid": {
+            "low": float(grid.min()),
+            "high": float(grid.max()),
+            "step": float(round(grid[1] - grid[0], 6)),
+        },
+        "roberta_offsets_inside_grid": M.offsets_inside_grid(offsets),
         "roberta_tuning_reviews": len(tune),
         "roberta_argmax_validation_macro_f1": float(argmax_f1),
         "roberta_tuned_validation_macro_f1": tuned_f1,
+    }
+
+
+def roberta_calibration(
+    df: pd.DataFrame, path: Path | None = None
+) -> tuple[M.RobertaCalibration, dict]:
+    """Fit the regression on RoBERTa's scores, on the same validation sample as the offsets."""
+    tune = with_roberta(tuning_sample(df), path or validation_cache_path())
+    log.info("RoBERTa: recalibrating on %d validation reviews", len(tune))
+    cal = M.RobertaCalibration().fit(tune, tune.label.to_numpy())
+    return cal, {
+        "roberta_calibrated_class_weight": str(cal.class_weight_),
+        "roberta_calibrated_search": cal.search_,
+        "roberta_calibrated_cv_macro_f1": cal.cv_macro_f1_,
+        "roberta_calibrated_coefficients": cal.coefficients(),
     }
 
 
@@ -97,6 +120,7 @@ def predict_all(
     compound = M.vader_compound(ev.text)
 
     offsets, rule_settings = roberta_rule(df)
+    calibration, calibration_settings = roberta_calibration(df)
 
     log.info("TF-IDF: fitting on %d training reviews", len(train))
     tfidf = M.TfidfLogistic().fit(train.text, train.label, val.text, val.label)
@@ -107,18 +131,23 @@ def predict_all(
         "tfidf_logistic": tfidf.predict(ev.text),
         "roberta": M.roberta_labels(ev),
         "roberta_tuned": M.roberta_labels(ev, offsets),
+        "roberta_calibrated": calibration.predict(ev),
         "finetuned": M.roberta_labels(ev, prefix="ft_p_"),
     }
-    settings = {
-        "vader_default_thresholds": list(M.VADER_DEFAULT),
-        "vader_tuned_thresholds": list(thresholds),
-        "vader_tuning_reviews": len(tune),
-        "vader_tuned_validation_macro_f1": vader_val_f1,
-        "tfidf_params": tfidf.params_,
-        "tfidf_vocabulary": len(tfidf.vectoriser.vocabulary_),
-        "tfidf_validation_macro_f1": tfidf.validation_macro_f1_,
-        "tfidf_search": tfidf.search_,
-    } | rule_settings
+    settings = (
+        {
+            "vader_default_thresholds": list(M.VADER_DEFAULT),
+            "vader_tuned_thresholds": list(thresholds),
+            "vader_tuning_reviews": len(tune),
+            "vader_tuned_validation_macro_f1": vader_val_f1,
+            "tfidf_params": tfidf.params_,
+            "tfidf_vocabulary": len(tfidf.vectoriser.vocabulary_),
+            "tfidf_validation_macro_f1": tfidf.validation_macro_f1_,
+            "tfidf_search": tfidf.search_,
+        }
+        | rule_settings
+        | calibration_settings
+    )
     ev = ev.assign(vader_compound=compound, **{f"pred_{m}": p for m, p in preds.items()})
     return ev, preds, settings, tfidf
 

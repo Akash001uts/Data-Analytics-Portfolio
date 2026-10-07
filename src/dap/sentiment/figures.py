@@ -24,15 +24,16 @@ COLOURS = {
     "vader_tuned": CATEGORICAL[0],
     "tfidf_logistic": CATEGORICAL[1],
     "roberta": CATEGORICAL[2],
-    "roberta_tuned": "#117a53",  # a darker green, so the two RoBERTa rules read as a pair
-    "finetuned": "#0b6e4b",  # a darker shade of the RoBERTa green
+    "roberta_tuned": "#117a53",  # darker greens for the RoBERTa variants
+    "roberta_calibrated": "#0b5c40",
+    "finetuned": "#7dd3b0",  # a light green: same family, but trained differently
 }
 
 
 def macro_f1_chart(results: dict) -> plt.Figure:
     models = results["models"]
     names = list(COLOURS)[::-1]
-    fig, ax = plt.subplots(figsize=(7.5, 3.6))
+    fig, ax = plt.subplots(figsize=(7.5, 0.5 * len(names) + 1))
     for y, m in enumerate(names):
         f1 = models[m]["macro_f1"]
         ax.errorbar(
@@ -64,9 +65,14 @@ def macro_f1_chart(results: dict) -> plt.Figure:
 
 def confusion_grid(results: dict) -> plt.Figure:
     cmap = LinearSegmentedColormap.from_list("blues", [SURFACE, *BLUE_RAMP])
-    fig, axes = plt.subplots(1, len(COLOURS), figsize=(3 * len(COLOURS), 3.4), sharey=True)
+    ncols = 4
+    nrows = -(-len(COLOURS) // ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 3.2 * nrows + 0.4), squeeze=False)
+    axes = axes.ravel()
+    for ax in axes[len(COLOURS) :]:
+        ax.set_visible(False)
     short = ["neg", "neu", "pos"]
-    for ax, m in zip(axes, COLOURS, strict=True):
+    for ax, m in zip(axes, COLOURS, strict=False):
         cm = np.array(results["models"][m]["confusion"], dtype=float)
         rows = cm / cm.sum(axis=1, keepdims=True)
         ax.imshow(rows, cmap=cmap, vmin=0, vmax=1)
@@ -86,7 +92,8 @@ def confusion_grid(results: dict) -> plt.Figure:
         ax.set_xlabel("Predicted")
         ax.grid(False)
         ax.set_title(results["models"][m]["label"], fontsize=9, fontweight="normal", loc="left")
-    axes[0].set_ylabel("Actual (from stars)")
+    for ax in axes[::ncols]:
+        ax.set_ylabel("Actual (from stars)")
     fig.suptitle(
         "Where each model's predictions go, as a share of each actual class",
         x=0.01,

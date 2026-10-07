@@ -27,15 +27,30 @@
       "ci_low": -0.1003,
       "estimate": -0.08539
     },
+    "roberta minus roberta_calibrated": {
+      "ci_high": 0.0002944,
+      "ci_low": -0.01918,
+      "estimate": -0.009555
+    },
     "roberta minus roberta_tuned": {
       "ci_high": -0.01097,
       "ci_low": -0.03172,
       "estimate": -0.02138
     },
+    "roberta_calibrated minus finetuned": {
+      "ci_high": -0.06212,
+      "ci_low": -0.08849,
+      "estimate": -0.07583
+    },
     "roberta_tuned minus finetuned": {
       "ci_high": -0.0493,
       "ci_low": -0.07853,
       "estimate": -0.064
+    },
+    "roberta_tuned minus roberta_calibrated": {
+      "ci_high": 0.02103,
+      "ci_low": 0.002462,
+      "estimate": 0.01183
     },
     "tfidf_logistic minus finetuned": {
       "ci_high": 0.02808,
@@ -46,6 +61,11 @@
       "ci_high": 0.116,
       "ci_low": 0.0846,
       "estimate": 0.101
+    },
+    "tfidf_logistic minus roberta_calibrated": {
+      "ci_high": 0.1045,
+      "ci_low": 0.07736,
+      "estimate": 0.09147
     },
     "tfidf_logistic minus roberta_tuned": {
       "ci_high": 0.09522,
@@ -61,6 +81,11 @@
       "ci_high": -0.1115,
       "ci_low": -0.1421,
       "estimate": -0.1263
+    },
+    "vader_default minus roberta_calibrated": {
+      "ci_high": -0.1217,
+      "ci_low": -0.1502,
+      "estimate": -0.1358
     },
     "vader_default minus roberta_tuned": {
       "ci_high": -0.1329,
@@ -86,6 +111,11 @@
       "ci_high": -0.06927,
       "ci_low": -0.1016,
       "estimate": -0.08531
+    },
+    "vader_tuned minus roberta_calibrated": {
+      "ci_high": -0.08067,
+      "ci_low": -0.1097,
+      "estimate": -0.09487
     },
     "vader_tuned minus roberta_tuned": {
       "ci_high": -0.09101,
@@ -188,6 +218,52 @@
           "n": 7792,
           "precision": 0.9302,
           "recall": 0.8874
+        }
+      }
+    },
+    "roberta_calibrated": {
+      "accuracy": 0.7433,
+      "confusion": [
+        [
+          988,
+          374,
+          85
+        ],
+        [
+          213,
+          388,
+          160
+        ],
+        [
+          192,
+          1543,
+          6057
+        ]
+      ],
+      "label": "RoBERTa, recalibrated on validation (logistic regression)",
+      "macro_f1": {
+        "ci_high": 0.6136,
+        "ci_low": 0.5925,
+        "estimate": 0.6028
+      },
+      "per_class": {
+        "negative": {
+          "f1": 0.6958,
+          "n": 1447,
+          "precision": 0.7093,
+          "recall": 0.6828
+        },
+        "neutral": {
+          "f1": 0.2531,
+          "n": 761,
+          "precision": 0.1683,
+          "recall": 0.5099
+        },
+        "positive": {
+          "f1": 0.8595,
+          "n": 7792,
+          "precision": 0.9611,
+          "recall": 0.7773
         }
       }
     },
@@ -449,6 +525,38 @@
       "transformers": "5.19.0"
     },
     "roberta_argmax_validation_macro_f1": 0.6018,
+    "roberta_calibrated_class_weight": "balanced",
+    "roberta_calibrated_coefficients": {
+      "negative": {
+        "intercept": 0.2188,
+        "log_p_negative": 0.4193,
+        "log_p_neutral": -0.1356,
+        "log_p_positive": -0.2406
+      },
+      "neutral": {
+        "intercept": 1.05,
+        "log_p_negative": -0.001374,
+        "log_p_neutral": 0.3819,
+        "log_p_positive": -0.02705
+      },
+      "positive": {
+        "intercept": -1.269,
+        "log_p_negative": -0.4179,
+        "log_p_neutral": -0.2463,
+        "log_p_positive": 0.2676
+      }
+    },
+    "roberta_calibrated_cv_macro_f1": 0.6055,
+    "roberta_calibrated_search": {
+      "None": 0.5425,
+      "balanced": 0.6055
+    },
+    "roberta_offset_grid": {
+      "high": 3.0,
+      "low": -3.0,
+      "step": 0.1
+    },
+    "roberta_offsets_inside_grid": true,
     "roberta_tuned_log_offsets": {
       "negative": -1.0,
       "neutral": -0.2,
@@ -512,6 +620,7 @@
         "finetuned": 0.647,
         "n": 4910,
         "roberta": 0.5582,
+        "roberta_calibrated": 0.5669,
         "roberta_tuned": 0.5804,
         "tfidf_logistic": 0.6734,
         "vader_default": 0.4398,
@@ -521,6 +630,7 @@
         "finetuned": 0.6943,
         "n": 5090,
         "roberta": 0.6292,
+        "roberta_calibrated": 0.6238,
         "roberta_tuned": 0.6423,
         "tfidf_logistic": 0.6902,
         "vader_default": 0.5013,
@@ -532,6 +642,7 @@
         "finetuned": 0.6077,
         "n": 2296,
         "roberta": 0.5193,
+        "roberta_calibrated": 0.4955,
         "roberta_tuned": 0.5237,
         "tfidf_logistic": 0.7008,
         "vader_default": 0.4317,
@@ -541,6 +652,7 @@
         "finetuned": 0.7044,
         "n": 7704,
         "roberta": 0.6145,
+        "roberta_calibrated": 0.6333,
         "roberta_tuned": 0.6401,
         "tfidf_logistic": 0.6892,
         "vader_default": 0.4782,
@@ -552,6 +664,7 @@
         "finetuned": 0.6547,
         "n": 1748,
         "roberta": 0.541,
+        "roberta_calibrated": 0.5318,
         "roberta_tuned": 0.5492,
         "tfidf_logistic": 0.7075,
         "vader_default": 0.4392,
@@ -561,6 +674,7 @@
         "finetuned": 0.6951,
         "n": 3198,
         "roberta": 0.5893,
+        "roberta_calibrated": 0.6082,
         "roberta_tuned": 0.622,
         "tfidf_logistic": 0.6962,
         "vader_default": 0.4507,
@@ -570,6 +684,7 @@
         "finetuned": 0.4988,
         "n": 627,
         "roberta": 0.4549,
+        "roberta_calibrated": 0.4001,
         "roberta_tuned": 0.4338,
         "tfidf_logistic": 0.6588,
         "vader_default": 0.4237,
@@ -579,6 +694,7 @@
         "finetuned": 0.7116,
         "n": 4427,
         "roberta": 0.6365,
+        "roberta_calibrated": 0.653,
         "roberta_tuned": 0.6598,
         "tfidf_logistic": 0.6859,
         "vader_default": 0.4961,
@@ -590,6 +706,7 @@
         "finetuned": 0.6017,
         "n": 409,
         "roberta": 0.5232,
+        "roberta_calibrated": 0.5283,
         "roberta_tuned": 0.5413,
         "tfidf_logistic": 0.6889,
         "vader_default": 0.4095,
@@ -599,6 +716,7 @@
         "finetuned": 0.6803,
         "n": 9591,
         "roberta": 0.5955,
+        "roberta_calibrated": 0.6046,
         "roberta_tuned": 0.6157,
         "tfidf_logistic": 0.6903,
         "vader_default": 0.4696,
@@ -610,6 +728,7 @@
         "finetuned": 0.6811,
         "n": 9919,
         "roberta": 0.5938,
+        "roberta_calibrated": 0.6043,
         "roberta_tuned": 0.6157,
         "tfidf_logistic": 0.6944,
         "vader_default": 0.4674,
@@ -619,6 +738,7 @@
         "finetuned": 0.4386,
         "n": 81,
         "roberta": 0.4598,
+        "roberta_calibrated": 0.3698,
         "roberta_tuned": 0.4054,
         "tfidf_logistic": 0.6548,
         "vader_default": 0.3978,

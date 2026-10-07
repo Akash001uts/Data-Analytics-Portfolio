@@ -15,8 +15,11 @@ ORDER = (
     "tfidf_logistic",
     "roberta",
     "roberta_tuned",
+    "roberta_calibrated",
     "finetuned",
 )
+# The models the per-class table covers: every RoBERTa variant, plus the fine-tuned one for scale
+PER_CLASS = ("roberta", "roberta_tuned", "roberta_calibrated", "finetuned")
 
 
 def readme_path() -> Path:
@@ -70,12 +73,47 @@ def render(r: dict) -> str:
         ("vader_tuned", "vader_default"),
         ("roberta_tuned", "roberta"),
         ("tfidf_logistic", "roberta_tuned"),
+        ("roberta_calibrated", "roberta"),
+        ("roberta_calibrated", "roberta_tuned"),
         ("finetuned", "roberta"),
         ("finetuned", "tfidf_logistic"),
     ):
         names = f"{r['models'][a]['label']} minus {r['models'][b]['label']}"
         lines.append(f"- {names}: {_ci(difference(diffs, a, b))}")
-    lines += ["", END]
+    lines += [
+        "",
+        "Per class, for the RoBERTa variants and the fine-tuned model (precision / recall / F1):",
+        "",
+        "| Model | Negative | Neutral | Positive |",
+        "| --- | --- | --- | --- |",
+    ]
+    for m in PER_CLASS:
+        pc = r["models"][m]["per_class"]
+        cells = [
+            f"{pc[c]['precision']:.2f} / {pc[c]['recall']:.2f} / {pc[c]['f1']:.2f}"
+            for c in ("negative", "neutral", "positive")
+        ]
+        lines.append(f"| {r['models'][m]['label']} | {' | '.join(cells)} |")
+    s = r["settings"]
+    off, grid = s["roberta_tuned_log_offsets"], s["roberta_offset_grid"]
+    edge = (
+        "inside the grid, not on its edge"
+        if s["roberta_offsets_inside_grid"]
+        else "on the edge of the grid, so the grid should be wider"
+    )
+    lines += [
+        "",
+        f"The tuned rule adds {off['negative']:+.1f} to the log probability of negative and "
+        f"{off['neutral']:+.1f} to neutral, picked from a grid of {grid['low']:g} to "
+        f"{grid['high']:g} in steps of {grid['step']:g} on {s['roberta_tuning_reviews']:,} "
+        f"validation reviews "
+        f"(the best pair is {edge}). The recalibration is a logistic regression on RoBERTa's three "
+        f"log probabilities, fitted on the same reviews, with "
+        f"{'balanced' if s['roberta_calibrated_class_weight'] == 'balanced' else 'equal'} "
+        f"class weights (picked by 5-fold cross-validation inside them).",
+        "",
+        END,
+    ]
     return "\n".join(lines)
 
 

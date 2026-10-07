@@ -61,6 +61,7 @@ reviews, and where do they all go wrong?
 | TF-IDF + logistic regression | 0.694 (0.681 to 0.706) | 0.851 | 0.52 | 0.78 |
 | RoBERTa (Twitter sentiment, zero-shot) | 0.593 (0.582 to 0.605) | 0.815 | 0.20 | 0.75 |
 | RoBERTa, decision rule tuned on validation | 0.615 (0.603 to 0.627) | 0.817 | 0.33 | 0.62 |
+| RoBERTa, recalibrated on validation (logistic regression) | 0.603 (0.593 to 0.614) | 0.743 | 0.51 | 0.68 |
 | DistilRoBERTa, fine-tuned on training reviews | 0.679 (0.666 to 0.691) | 0.838 | 0.50 | 0.79 |
 
 Differences in macro-F1 (same reviews, paired bootstrap):
@@ -70,8 +71,21 @@ Differences in macro-F1 (same reviews, paired bootstrap):
 - VADER, thresholds tuned on validation minus VADER, default thresholds: 0.041 (0.029 to 0.053)
 - RoBERTa, decision rule tuned on validation minus RoBERTa (Twitter sentiment, zero-shot): 0.021 (0.011 to 0.032)
 - TF-IDF + logistic regression minus RoBERTa, decision rule tuned on validation: 0.080 (0.064 to 0.095)
+- RoBERTa, recalibrated on validation (logistic regression) minus RoBERTa (Twitter sentiment, zero-shot): 0.010 (-0.000 to 0.019)
+- RoBERTa, recalibrated on validation (logistic regression) minus RoBERTa, decision rule tuned on validation: -0.012 (-0.021 to -0.002)
 - DistilRoBERTa, fine-tuned on training reviews minus RoBERTa (Twitter sentiment, zero-shot): 0.085 (0.070 to 0.100)
 - DistilRoBERTa, fine-tuned on training reviews minus TF-IDF + logistic regression: -0.016 (-0.028 to -0.003)
+
+Per class, for the RoBERTa variants and the fine-tuned model (precision / recall / F1):
+
+| Model | Negative | Neutral | Positive |
+| --- | --- | --- | --- |
+| RoBERTa (Twitter sentiment, zero-shot) | 0.63 / 0.75 / 0.68 | 0.18 / 0.20 / 0.19 | 0.93 / 0.89 / 0.91 |
+| RoBERTa, decision rule tuned on validation | 0.75 / 0.62 / 0.68 | 0.21 / 0.33 / 0.26 | 0.92 / 0.90 / 0.91 |
+| RoBERTa, recalibrated on validation (logistic regression) | 0.71 / 0.68 / 0.70 | 0.17 / 0.51 / 0.25 | 0.96 / 0.78 / 0.86 |
+| DistilRoBERTa, fine-tuned on training reviews | 0.66 / 0.79 / 0.72 | 0.33 / 0.50 / 0.40 | 0.97 / 0.88 / 0.92 |
+
+The tuned rule adds -1.0 to the log probability of negative and -0.2 to neutral, picked from a grid of -3 to 3 in steps of 0.1 on 5,000 validation reviews (the best pair is inside the grid, not on its edge). The recalibration is a logistic regression on RoBERTa's three log probabilities, fitted on the same reviews, with balanced class weights (picked by 5-fold cross-validation inside them).
 
 <!-- results:end -->
 

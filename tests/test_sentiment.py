@@ -235,6 +235,71 @@ def test_roberta_rule_never_sees_test_rows(tmp_path):
     assert M.tune_roberta(rows, df.label[test].to_numpy())[0] != offsets
 
 
+def test_offsets_on_the_grid_edge_are_flagged():
+    assert M.offsets_inside_grid({"negative": -1.0, "neutral": -0.2, "positive": 0.0})
+    assert not M.offsets_inside_grid({"negative": float(M.OFFSET_GRID.min()), "neutral": 0.0})
+    assert not M.offsets_inside_grid({"negative": 0.0, "neutral": float(M.OFFSET_GRID.max())})
+
+
+def test_committed_rule_is_not_on_the_grid_edge():
+    """Offsets on the grid's edge would mean the grid was too small, and the README wrong."""
+    import json
+
+    from dap.sentiment import train as T
+
+    path = T.reports_dir() / "results.json"
+    if not path.exists():
+        pytest.skip("no sentiment results yet")
+    settings = json.loads(path.read_text(encoding="utf-8"))["settings"]
+    assert settings["roberta_offsets_inside_grid"]
+    assert M.offsets_inside_grid(settings["roberta_tuned_log_offsets"])
+
+
+def test_calibration_fixes_an_under_called_class():
+    probs, y = under_called_neutral(600, 0)
+    cal = M.RobertaCalibration().fit(probs, y)
+    new_probs, new_y = under_called_neutral(600, 5)
+    labels = list(C.LABELS)
+    argmax_f1 = f1_score(new_y, M.roberta_labels(new_probs), average="macro", labels=labels)
+    cal_f1 = f1_score(new_y, cal.predict(new_probs), average="macro", labels=labels)
+    assert cal_f1 > argmax_f1 + 0.2
+    assert set(cal.search_) == {str(cw) for cw in M.CALIBRATION_GRID}
+
+
+def test_calibration_never_sees_test_rows(tmp_path):
+    """Scrambling the test reviewers' labels and RoBERTa outputs must not move the regression."""
+    from dap.sentiment import train as T
+
+    val_probs, val_y = under_called_neutral(300, 1)
+    test_probs, test_y = under_called_neutral(300, 2)
+    df = pd.DataFrame(
+        {
+            "review_id": np.arange(600),
+            "split": ["validation"] * 300 + ["test"] * 300,
+            "label": np.concatenate([val_y, test_y]),
+            "text": "x",
+        }
+    )
+    cache = pd.concat([val_probs, test_probs], ignore_index=True).assign(
+        review_id=df.review_id, n_tokens=5
+    )
+    path = tmp_path / "roberta_validation_predictions.csv"
+    cache.to_csv(path, index=False)
+    before = T.roberta_calibration(df, path)[1]
+
+    rng = np.random.default_rng(3)
+    test = df.split == "test"
+    df.loc[test, "label"] = rng.choice(["negative", "positive"], test.sum())
+    cache.loc[test, ["p_negative", "p_neutral", "p_positive"]] = [0.2, 0.45, 0.35]
+    cache.to_csv(path, index=False)
+    assert T.roberta_calibration(df, path)[1] == before
+
+    # the check has teeth: fitting on those test rows would give different coefficients
+    rows = cache[test.to_numpy()]
+    leaky = M.RobertaCalibration().fit(rows, df.label[test].to_numpy())
+    assert leaky.coefficients() != before["roberta_calibrated_coefficients"]
+
+
 def test_fast_macro_f1_matches_sklearn():
     rng = np.random.default_rng(0)
     y = rng.choice(C.LABELS, 500)
