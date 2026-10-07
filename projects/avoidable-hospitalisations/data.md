@@ -43,8 +43,8 @@ Three things decided it for me:
    GP-use data is AIHW PHC 19, which is published by SA3.
 
 The cost is sample size: 327 SA3s with a published 2023-24 rate, against about 1,158 PHAs. That's enough for the
-linear and spatial lag models. For LightGBM I kept the trees shallow and regularised, and judged it on its
-spatial CV score instead of assuming it would win.
+linear and spatial lag models. For LightGBM I used small trees (8 leaves) with fixed, conservative
+settings, and judged it on its spatial CV score instead of assuming it would win.
 
 ### Nesting and CV groups
 
@@ -129,7 +129,7 @@ The model inputs are an explicit allowlist of (sheet, indicator) pairs from the 
 features I worked out myself. Anything that isn't on the list can't reach a model. `src/dap/health/features.py` holds the list, and
 `tests/test_features.py` and `tests/test_allowlist_workbook.py` enforce the rules below. The second test
 also checks that every PHIDU feature resolves to exactly one column of the real workbook, so if a future
-release renames a sheet or relabels a column, the test fails instead of the model quietly losing an input.
+release renames a sheet or relabels a column, the test fails straight away.
 
 ### Rules the tests enforce
 
