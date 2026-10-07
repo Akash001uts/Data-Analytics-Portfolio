@@ -57,15 +57,15 @@ There's also an [interactive version of the map](https://akash001uts.github.io/D
 ## Sentiment analysis, redone
 
 My first sentiment project said a RoBERTa transformer was "clearly" better than VADER without calculating a
-single score. This time I measured it: six models on the same 10,000 held-out Amazon food reviews, with macro-F1
+single score. This time I measured it: seven models on the same 10,000 held-out Amazon food reviews, with macro-F1
 and paired bootstrap intervals, after removing duplicate reviews and splitting by reviewer.
 
 ![Macro-F1 for each sentiment model with 95% bootstrap intervals](reports/sentiment/figures/01_macro_f1.png)
 
 **Why it's interesting:** my old claim turned out to be right, but only half the story. RoBERTa does beat VADER,
 and the interval for the difference is well clear of zero. But a plain TF-IDF and logistic regression model trained
-on the reviews beats RoBERTa, which was trained on tweets and used as is, even after I tuned its decision rule on
-validation. Fine-tuning a small transformer on the reviews closes most of that gap, which says the training data
+on the reviews beats RoBERTa, which was trained on tweets and used as is. Tuning or recalibrating RoBERTa's
+scores on validation barely helps, because its sense of "neutral" doesn't match a three-star rating. Fine-tuning a small transformer on the reviews closes most of that gap, which says the training data
 mattered more than the model. Accuracy would have told the wrong story too, because nearly four in five reviews are
 positive.
 

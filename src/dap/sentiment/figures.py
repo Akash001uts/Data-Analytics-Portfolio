@@ -1,5 +1,6 @@
 """Figures for the sentiment notebook, drawn from results.json only."""
 
+import textwrap
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -91,7 +92,8 @@ def confusion_grid(results: dict) -> plt.Figure:
         ax.set_yticks(range(3), short)
         ax.set_xlabel("Predicted")
         ax.grid(False)
-        ax.set_title(results["models"][m]["label"], fontsize=9, fontweight="normal", loc="left")
+        title = textwrap.fill(results["models"][m]["label"], 34, break_on_hyphens=False)
+        ax.set_title(title, fontsize=9, fontweight="normal", loc="left")
     for ax in axes[::ncols]:
         ax.set_ylabel("Actual (from stars)")
     fig.suptitle(

@@ -40,6 +40,8 @@ reviews, and where do they all go wrong?
     just taking the most likely class, I add an offset to the log probability of negative and neutral, and pick
     the offsets with the best macro-F1 on 5,000 validation reviews (scored once and cached in
     `reports/sentiment/roberta_validation_predictions.csv`);
+  - the same RoBERTa recalibrated on those validation reviews: a logistic regression on its three log
+    probabilities, which can reweight the classes against each other as well as shift them;
   - DistilRoBERTa (a smaller RoBERTa) fine-tuned on the training reviewers. My laptop has no GPU, so I kept it
     small: 20,000 training reviews with the same label mix as the full split, each cut to its first 128 tokens,
     one pass over the data, and the checkpoint picked on 2,000 validation reviews. Its predictions are cached the
@@ -98,10 +100,18 @@ The tuned rule adds -1.0 to the log probability of negative and -0.2 to neutral,
 - But a simple model trained on these reviews beats it. TF-IDF with logistic regression, trained on food
   reviews, beats the Twitter-trained RoBERTa used as is. That's a model trained on the right text against a bigger
   model trained on different text.
-- Tuning RoBERTa's decision rule helps, but only a little. I expected the tuned rule to push it towards neutral.
-  Instead it made RoBERTa slower to say negative: it was calling a lot of three-star reviews negative, and those
-  move to neutral. Neutral recall goes up and negative recall goes down, and the gain in macro-F1 is real (the
-  interval is above zero) but small. TF-IDF is still clearly ahead, so the gap isn't just a badly placed threshold.
+- RoBERTa's problem is what it learnt, not where it draws its lines. Zero-shot, it calls a lot of three-star
+  reviews negative, because its idea of "neutral" (no sentiment at all, from tweets) doesn't match a three-star
+  rating. I tried two fixes on validation reviews to see how much of that a better boundary could recover:
+  - Tuned offsets made RoBERTa slower to say negative, so those three-star reviews move to neutral. Negative
+    precision goes up and negative recall goes down, and macro-F1 rises a little (the paired interval is above
+    zero).
+  - A logistic regression on its scores has more freedom, but did slightly worse than the offsets. It finds
+    more neutrals by calling a lot of positive reviews neutral too.
+
+  Either way, neutral F1 stays around a quarter, because only about one in five of RoBERTa's "neutral" calls
+  is right however you re-map its scores. That points at the model's representation, and fine-tuning is the
+  test of that.
 - Fine-tuning closes most of that gap, but not all of it. A small transformer fine-tuned on 20,000 of the
   training reviews beats zero-shot RoBERTa comfortably and lands just below TF-IDF, and the interval for that
   last difference only just misses zero. On reviews short enough to fit in its 128 tokens it's at least as good
@@ -124,8 +134,9 @@ The tuned rule adds -1.0 to the log probability of negative and -0.2 to neutral,
 ## Limitations
 
 - The labels come from star ratings, which mix sentiment with price, delivery and the odd mistake.
-- The tuned RoBERTa rule only moves where the model draws the lines between classes, not what it has learnt. It's
-  tuned on 5,000 validation reviews, not all of them, because scoring them with RoBERTa on a laptop CPU is slow.
+- The tuned rule and the recalibration only change how RoBERTa's scores are turned into a class, not what it has
+  learnt. Both are fitted on 5,000 validation reviews, not all of them, because scoring them with RoBERTa on a
+  laptop CPU is slow.
 - The fine-tuned model saw 20,000 reviews cut to 128 tokens, while TF-IDF learnt from all of the training reviews
   in full. That's not an even contest, and with one run I can't say whether more data or longer inputs would
   matter more.

@@ -189,6 +189,14 @@ This turned out to be the most important decision so far.
 - **A real gain can still be a small one.** The paired bootstrap puts the improvement clear of zero, but it closes
   only a small part of the gap to TF-IDF. So the gap is mostly about what RoBERTa learnt, not where it draws its
   lines.
+- **More freedom didn't help.** After some feedback on this, I also fitted a logistic regression on RoBERTa's three
+  scores, which can reweight the classes as well as shift them. It did slightly worse than the two offsets: it
+  finds more neutrals, but by calling a lot of positive reviews neutral too. The per-class table made the reason
+  clear. However I re-map RoBERTa's scores, only about one in five of its neutral calls is right, so the limit is
+  the model, not the boundary. That's a better story than "I gained 0.02", and I should have framed it that way
+  from the start.
+- **Say where the grid ends.** I report the offsets, the grid they came from, and a test that fails if the best
+  pair lands on the edge (which would mean the grid was too small).
 - **Test that tuning can't see the test set.** The test scrambles the test reviewers' labels and RoBERTa outputs and
   checks the tuned rule doesn't move. It also checks that tuning on those scrambled rows would give a different
   rule, so the test would actually catch a leak.
